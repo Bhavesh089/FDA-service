@@ -4,7 +4,7 @@ export const queryHandler = async (event: APIGatewayEvent, context: Context, cal
   // Simulate a database query
   const data = {
     message: "Query successful",
-    items: ["item1", "item2", "item3"],
+    items: ["item1", "item2", "item4"],
   };
   return {
     statusCode: 200,

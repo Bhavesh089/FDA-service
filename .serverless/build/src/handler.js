@@ -26,7 +26,7 @@ module.exports = __toCommonJS(handler_exports);
 var queryHandler = async (event, context, callback) => {
   const data = {
     message: "Query successful",
-    items: ["item1", "item2", "item3"]
+    items: ["item1", "item2", "item4"]
   };
   return {
     statusCode: 200,
