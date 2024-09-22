@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../../../src/handler.ts"],
-  "sourcesContent": ["import { APIGatewayEvent, Context, Callback } from 'aws-lambda';\n\nexport const queryHandler = async (event: APIGatewayEvent, context: Context, callback: Callback) => {\n  // Simulate a database query\n  const data = {\n    message: \"Query successful\",\n    items: [\"item1\", \"item2\", \"item3\"],\n  };\n  return {\n    statusCode: 200,\n    body: JSON.stringify(data),\n  };\n};\n"],
-  "mappings": ";;;;;;;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAEO,IAAM,eAAe,OAAO,OAAwB,SAAkB,aAAuB;AAElG,QAAM,OAAO;AAAA,IACX,SAAS;AAAA,IACT,OAAO,CAAC,SAAS,SAAS,OAAO;AAAA,EACnC;AACA,SAAO;AAAA,IACL,YAAY;AAAA,IACZ,MAAM,KAAK,UAAU,IAAI;AAAA,EAC3B;AACF;",
-  "names": []
-}

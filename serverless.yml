@@ -1,4 +1,4 @@
-service: fda-service
+service: fda
 
 frameworkVersion: '4'
 
@@ -8,8 +8,8 @@ provider:
   region: ap-south-1
 
 functions:
-  dbquery:
-    handler: src/handler.queryHandler
+  dbQuery:
+    handler: src/handler.dbQuery
     events:
       - http:
           path: dbquery
@@ -21,15 +21,5 @@ plugins:
 
 custom:
   serverless-offline:
-    httpPort: 3004
-    lambdaPort: 3005
-
-package:
-  individually: true
-
-build:
-  esbuild:
-    bundle: true
-    target: node20
-    platform: node
-    sourcemap: true
+    httpPort: 3002
+    lambdaPort: 3003
