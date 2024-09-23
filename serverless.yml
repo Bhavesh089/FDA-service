@@ -1,6 +1,6 @@
 service: fda
 
-frameworkVersion: '4'
+frameworkVersion: '3'
 
 provider:
   name: aws
@@ -8,11 +8,11 @@ provider:
   region: ap-south-1
 
 functions:
-  dbQuery:
-    handler: src/handler.dbQuery
+  get_user:
+    handler: src/handlers/users.getUser
     events:
       - http:
-          path: dbquery
+          path: get_user
           method: post
           cors: true
 

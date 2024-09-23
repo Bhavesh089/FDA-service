@@ -4,15 +4,15 @@
     "description": "GraphQL FDA service",
     "main": "src/index.js",
     "scripts": {
-      "start": "sls offline start"
+        "dev": "nodemon"
     },
     "dependencies": {
-      "apollo-server-lambda": "^3.7.0",
-      "graphql": "^15.6.0",
-      "aws-sdk": "^2.1092.0"
+        "apollo-server-lambda": "^3.7.0",
+        "aws-sdk": "^2.1092.0",
+        "graphql": "^15.6.0",
+        "serverless-offline": "^13.8.0"
     },
     "devDependencies": {
-      "serverless-offline": "^13.8.0"
+        "nodemon": "^3.1.7"
     }
-  }
-  
+}
