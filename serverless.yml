@@ -8,6 +8,38 @@ provider:
   region: ap-south-1
 
 functions:
+  login:
+    handler: src/handlers/auth.login
+    events:
+      - http:
+          path: login
+          method: post
+          cors: true
+  
+  generateOtp:
+    handler: src/handlers/auth.generateOtp
+    events:
+      - http:
+          path: generate_otp
+          method: post
+          cors: true
+
+  verifyLogin:
+    handler: src/handlers/auth.verifyLogin
+    events:
+      - http:
+          path: verify_login
+          method: post
+          cors: true
+
+  verifyToken:
+    handler: src/handlers/auth.verifyToken
+    events:
+      - http:
+          path: verify_token
+          method: post
+          cors: true
+
   get_user:
     handler: src/handlers/users.getUser
     events:
