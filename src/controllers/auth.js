@@ -17,6 +17,48 @@ function login({ email, mobileNumber, role }) {
   }
 }
 
+function generateOtp({ email, mobileNumber, role }) {
+  console.log({ email, mobileNumber, role })
+
+  return {
+    status: true,
+    message: 'Otp Generated',
+    otpId: 123,
+  }
+}
+
+function verifyLogin({ loginId, otp, role }) {
+  console.log({ loginId, otp, role })
+
+  return {
+    status: true,
+    message: 'Login Success',
+    data: {
+      token: '1234',
+      userId: 1234,
+    },
+  }
+}
+
+function verifyToken({ authToken }) {
+  console.log({ authToken })
+
+  if (Math.random() > 0.5) {
+    return {
+      status: true,
+      message: 'Valid Token',
+    }
+  } else {
+    return {
+      status: false,
+      message: 'Token Expired',
+    }
+  }
+}
+
 module.exports = {
   login,
+  generateOtp,
+  verifyLogin,
+  verifyToken,
 }
