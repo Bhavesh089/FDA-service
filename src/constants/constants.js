@@ -1,5 +1,9 @@
-const USER_ROLES = ['Customer', 'Vendor', 'Admin']
+const USER_CUSTOMER_ROLE = 'CUSTOMER'
+const USER_VENDOR_ROLE = 'VENDOR'
+const USER_ADMIN_ROLE = 'ADMIN'
+
+const USER_ROLES = [USER_CUSTOMER_ROLE, USER_VENDOR_ROLE, USER_ADMIN_ROLE]
 
 module.exports = {
-    USER_ROLES
+  USER_ROLES,
 }
