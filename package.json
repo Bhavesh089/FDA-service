@@ -4,8 +4,9 @@
   "description": "GraphQL FDA service",
   "main": "src/index.js",
   "scripts": {
-    "dev": "nodemon",
-    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\""
+      "dev": "nodemon",
+    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
+    "prepare": "husky install"
   },
   "dependencies": {
     "apollo-server-lambda": "^3.7.0",
@@ -14,7 +15,7 @@
     "serverless-offline": "^13.8.0"
   },
   "devDependencies": {
-    "husky": "^9.1.6",
+    "husky": "^8.0.0",
     "lint-staged": "^15.2.10",
     "nodemon": "^3.1.7",
     "prettier": "^3.3.3"
