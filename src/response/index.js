@@ -3,7 +3,8 @@ function success(data) {
   return {
     success: true,
     message: "",
-    data
+    data,
+    statusCode: 200
   }
 }
 
@@ -28,6 +29,7 @@ function httpError(data) {
 }
 
 function httpSuccess(data) {
+  console.log('this is hte data')
   return {
     statusCode: 200,
     body: JSON.stringify(success(data), null, 2)
