@@ -417,7 +417,7 @@ const getByItemIds = async (tableName, fieldValues) => {
   };
 
 
-  const updateItem = async (tableName, item) => {
+  const updateItem = async (tableName, item, keys) => {
     // Validate inputs
     if (!tableName || typeof tableName !== 'string') {
       throw new Error('Invalid table name');
@@ -426,8 +426,7 @@ const getByItemIds = async (tableName, fieldValues) => {
     if (!item || typeof item !== 'object') {
       throw new Error('Invalid item data');
     }
-  
-    const keys = ['PrimaryKey', 'SortKey']; // Specify your key names as required (replace 'PrimaryKey', 'SortKey')
+     // Specify your key names as required (replace 'PrimaryKey', 'SortKey')
   
     const keyValues = {};
     const updateExpressions = [];
@@ -449,9 +448,9 @@ const getByItemIds = async (tableName, fieldValues) => {
       }
     }
   
-    if (Object.keys(keyValues).length === 0) {
-      throw new Error('Primary key(s) not provided in the item');
-    }
+    // if (Object.keys(keyValues).length === 0) {
+    //   throw new Error('Primary key(s) not provided in the item');
+    // }
   
     const params = {
       TableName: tableName,

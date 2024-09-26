@@ -27,6 +27,13 @@ functions:
           path: create_user
           method: post
           cors: true
+  update_user:
+    handler: src/handlers/users.updateUser
+    events:
+      - http:
+          path: updateUser
+          method: post
+          cors: true
 
   getuser_by_ids:
     handler: src/handlers/users.getUserByIds
