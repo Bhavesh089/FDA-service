@@ -1,6 +1,6 @@
 const fs = require('fs')
 const path = require('path');
-const { getItemById, createItems, getByItemIds, getItemsWithFilters, queryItemsWithFilters } = require('../services/dynamoService');
+const { getItemById, createItems, getByItemIds, getItemsWithFilters, queryItemsWithFilters, updateItem } = require('../services/dynamoService');
 const { validateUser } = require('../model/userModel');
 
 async function getUserById({id}){
@@ -58,6 +58,18 @@ const createUser = async (userPayload) => {
       }
   }
 
+  const updateUser = async (userPayload) => {
+    try {
+      const result = await updateItem("fda-users", userPayload, ['user']);
+         console.log(result, 'this is the result')
+      return result
+    } catch (error) {
+        console.log(error, 'this is the error'
+        )
+      return { statusCode: 400, body: JSON.stringify({ error: error.message }) };
+    }
+  };
+
 
   
 module.exports = {
@@ -65,4 +77,5 @@ module.exports = {
     createUser,
     getUserByIds,
     queryUsers,
+    updateUser
 }
