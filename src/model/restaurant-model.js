@@ -26,4 +26,4 @@ const validateRestaurants = (data) => {
   }
 }
 
-module.exports = { validateRestaurants, TABLE_USERS: 'restaurants' }
+module.exports = { validateRestaurants, TABLE_RESTAURANTS: 'restaurants' }

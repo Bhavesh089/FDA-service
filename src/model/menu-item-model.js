@@ -23,4 +23,4 @@ const validateMenuItems = (data) => {
   }
 }
 
-module.exports = { validateMenuItems, TABLE_USERS: 'menu_items' }
+module.exports = { validateMenuItems, TABLE_MENU_ITEMS: 'menu_items' }
