@@ -1,18 +1,37 @@
 {
-    "name": "gql-fda",
-    "version": "1.0.0",
-    "description": "GraphQL FDA service",
-    "main": "src/index.js",
-    "scripts": {
-        "dev": "nodemon"
-    },
-    "dependencies": {
-        "apollo-server-lambda": "^3.7.0",
-        "aws-sdk": "^2.1092.0",
-        "graphql": "^15.6.0",
-        "serverless-offline": "^13.8.0"
-    },
-    "devDependencies": {
-        "nodemon": "^3.1.7"
+  "name": "gql-fda",
+  "version": "1.0.0",
+  "description": "GraphQL FDA service",
+  "main": "src/index.js",
+  "scripts": {
+      "dev": "nodemon",
+    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
+    "prepare": "husky"
+  },
+  "dependencies": {
+    "apollo-server-lambda": "^3.7.0",
+    "aws-sdk": "^2.1092.0",
+    "graphql": "^15.6.0",
+    "serverless-offline": "^13.8.0",
+    "joi": "^17.13.3",
+        "lodash": "^4.17.21",
+        "uuid": "^10.0.0"
+  },
+  "devDependencies": {
+    "husky": "^9.1.6",
+    "lint-staged": "^15.2.10",
+    "nodemon": "^3.1.7",
+    "prettier": "^3.3.3"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
     }
+  },
+  "lint-staged": {
+    "src/**/*.{js,jsx,ts,tsx,json,css,scss,md}": [
+      "prettier --write",
+      "git add"
+    ]
+  }
 }
