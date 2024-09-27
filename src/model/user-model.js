@@ -1,21 +1,26 @@
 const Joi = require('joi')
 
+const { USER_ROLES } = require('../constants/constants')
+
 // Define User schema with Joi validation
 const userSchema = Joi.object({
-  UserID: Joi.string(),
+  UserId: Joi.string(),
   Name: Joi.string().required(),
   Email: Joi.string().email().optional(),
   Phone: Joi.string().min(10).max(15).optional(),
-  Role: Joi.string().valid('Customer', 'Vendor', 'Admin').required(),
+  Password: Joi.string().optional(),
+  Otp: Joi.string().optional(),
+  Role: Joi.string()
+    .valid(...USER_ROLES)
+    .required(),
   TotalEarnings: Joi.number().optional(),
+  AccountStatus: Joi.string().valid('active', 'inactive'),
+  CreatedAt: Joi.date().optional(),
+  Address: Joi.string().optional(),
+
   RegisteredRestaurants: Joi.array().items(Joi.string()).optional(),
   OrderHistory: Joi.array().items(Joi.string()).optional(),
   Favorites: Joi.array().items(Joi.string()).optional(),
-  Account_status: Joi.string().valid('active', 'inactive'),
-  password: Joi.string().optional(),
-  CreatedAt: Joi.date().optional(),
-  Address: Joi.string().optional(),
-  RestaurantID: Joi.string().optional(),
 })
 
 const validateUsers = (data) => {
