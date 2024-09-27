@@ -1,26 +1,28 @@
 const Joi = require('joi')
 
-const { USER_ROLES } = require('../constants/constants')
+const { USER_ROLES, ACCOUNT_STATUSES } = require('../constants/constants')
 
 // Define User schema with Joi validation
 const userSchema = Joi.object({
-  UserId: Joi.string(),
-  Name: Joi.string().required(),
-  Email: Joi.string().email().optional(),
-  Phone: Joi.string().min(10).max(15).optional(),
-  Password: Joi.string().optional(),
-  Otp: Joi.string().optional(),
-  Role: Joi.string()
+  user_id: Joi.string(),
+  name: Joi.string().required(),
+  email: Joi.string().email().optional(),
+  phone: Joi.string().min(10).max(15).required(),
+  password: Joi.string().optional(),
+  otp: Joi.string().required(),
+  role: Joi.string()
     .valid(...USER_ROLES)
     .required(),
-  TotalEarnings: Joi.number().optional(),
-  AccountStatus: Joi.string().valid('active', 'inactive'),
-  CreatedAt: Joi.date().optional(),
-  Address: Joi.string().optional(),
+  total_earnings: Joi.number().optional(),
+  account_status: Joi.string()
+    .valid(...ACCOUNT_STATUSES)
+    .required(),
+  created_at: Joi.date().required(),
+  address: Joi.string().optional(),
 
-  RegisteredRestaurants: Joi.array().items(Joi.string()).optional(),
-  OrderHistory: Joi.array().items(Joi.string()).optional(),
-  Favorites: Joi.array().items(Joi.string()).optional(),
+  registered_restaurants: Joi.array().items(Joi.string()).optional(),
+  order_history: Joi.array().items(Joi.string()).optional(),
+  favorites: Joi.array().items(Joi.string()).optional(),
 })
 
 const validateUsers = (data) => {
