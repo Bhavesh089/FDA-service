@@ -2,7 +2,7 @@
 
 const { SignJWT } = require('jose')
 
-const { getUserByMobileNumber } = require('./users')
+const { getUserByMobileNumber } = require('./users-controller')
 const { DEFAULT_AUTH_EXPIRY_TIME } = require('../constants/auth-constants')
 
 /**
@@ -14,7 +14,7 @@ const { DEFAULT_AUTH_EXPIRY_TIME } = require('../constants/auth-constants')
 const verifyLoginOtp = async ({ loginId, otp }) => {
   try {
     // Assuming loginId to be mobile number for all users
-    console.log(`verifyLoginOtp:: Args:: ${{ loginId, otp }}`)
+    console.log(`verifyLoginOtp::Params::${{ loginId, otp }}`)
     const userDetailsResponse = await getUserByMobileNumber(loginId)
 
     if (!userDetailsResponse.status) {
