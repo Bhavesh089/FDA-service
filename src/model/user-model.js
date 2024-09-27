@@ -35,4 +35,4 @@ const validateUsers = (data) => {
   }
 }
 
-module.exports = { validateUsers }
+module.exports = { validateUsers, TABLE_USERS: 'users' }

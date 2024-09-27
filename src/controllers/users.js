@@ -1,5 +1,4 @@
-const fs = require('fs')
-const path = require('path')
+'use strict'
 
 const {
   getItemById,
@@ -9,18 +8,50 @@ const {
   queryItemsWithFilters,
   updateItem,
 } = require('../services/dynamoService')
-const { validateUser } = require('../model/userModel')
+const { TABLE_USERS } = require('../model/user-model')
 
-async function getUserById({ id }) {
-  // console.log(email, "this is email->")
-  const user = await getItemById('fda-users', 'UserID', id)
-  console.log(user, 'this is user')
-  return user
+/**
+ * Get User By userId
+ * @async
+ * @param {String} id
+ * @returns {Promise<Object>}
+ */
+const getUserById = async ({ id }) => {
+  try {
+    console.log(`getUserById:: Args:: ${{ id }}`)
+    const user = await getItemById(TABLE_USERS, 'userId', id)
+    console.log(user)
+
+    if (!user || !user.userId) {
+      return {
+        status: false,
+        statusCode: 404,
+        message: 'User Not Found',
+      }
+    }
+
+    return {
+      status: true,
+      statusCode: 200,
+      message: 'Get User Success',
+      data: user,
+    }
+  } catch (error) {
+    console.error(`getUserById:: ${error?.message}`)
+    console.error(error)
+    return {
+      status: false,
+      statusCode: 500,
+      message: 'Error in getting user by id',
+      error: { message: error?.message, error },
+    }
+  }
 }
 
+// #TODO - B
 const createUser = async (userPayload) => {
   try {
-    const result = await createItems('fda-users', userPayload, 'user')
+    const result = await createItems(TABLE_USERS, userPayload, 'user')
     console.log(result, 'this is the result')
     return result
   } catch (error) {
@@ -29,9 +60,10 @@ const createUser = async (userPayload) => {
   }
 }
 
+// #CHECK
 const getUserByIds = async ({ UserID }) => {
   try {
-    const result = await getByItemIds('fda-users', { UserID: UserID })
+    const result = await getByItemIds(TABLE_USERS, { UserID: UserID })
     console.log(result, 'this is the result')
     return result
   } catch (error) {
@@ -40,10 +72,11 @@ const getUserByIds = async ({ UserID }) => {
   }
 }
 
+// #TODO - B
 const queryUsers = async ({ primaryKey = {}, filters = {} }) => {
   try {
     // console.log(primaryKey, filters, "this is filters-->")
-    const result = await getItemsWithFilters('fda-users', filters)
+    const result = await getItemsWithFilters(TABLE_USERS, filters)
     // const result = await queryItems("fda-users", primaryKey, filters);
 
     //   const filters = {
@@ -64,7 +97,7 @@ const queryUsers = async ({ primaryKey = {}, filters = {} }) => {
 
 const updateUser = async (userPayload) => {
   try {
-    const result = await updateItem('fda-users', userPayload, ['user'])
+    const result = await updateItem(TABLE_USERS, userPayload, ['user'])
     console.log(result, 'this is the result')
     return result
   } catch (error) {
@@ -93,14 +126,14 @@ const getUserByMobileNumber = async (mobileNumber) => {
       return {
         status: false,
         statusCode: 404,
-        message: 'Account Not Found',
+        message: 'User Not Found',
       }
     }
 
     return {
       status: true,
       statusCode: 200,
-      message: 'Get User Details Success',
+      message: 'Get User Success',
       data: user,
     }
   } catch (error) {
@@ -109,7 +142,7 @@ const getUserByMobileNumber = async (mobileNumber) => {
     return {
       status: false,
       statusCode: 500,
-      message: 'Error in getting User Details',
+      message: 'Error in getting User',
       error: { message: error?.message, error },
     }
   }
