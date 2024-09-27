@@ -6,6 +6,11 @@ provider:
   name: aws
   runtime: nodejs20.x
   region: ap-south-1
+  iam:
+    role:
+      - ${file(iam.yml)}
+  environment:
+    USERS_TABLE: ${self:custom.usersTableName}
 
 functions:
   login:
@@ -40,11 +45,41 @@ functions:
           method: post
           cors: true
 
-  get_user:
-    handler: src/handlers/users.getUser
+  getuser_by_id:
+    handler: src/handlers/users.getUserById
     events:
       - http:
           path: get_user
+          method: post
+          cors: true
+  create_user:
+    handler: src/handlers/users.createUser
+    events:
+      - http:
+          path: create_user
+          method: post
+          cors: true
+  update_user:
+    handler: src/handlers/users.updateUser
+    events:
+      - http:
+          path: updateUser
+          method: post
+          cors: true
+
+  getuser_by_ids:
+    handler: src/handlers/users.getUserByIds
+    events:
+      - http:
+          path: getuser_by_ids
+          method: post
+          cors: true
+
+  query_user_by_filters:
+    handler: src/handlers/users.queryUsers
+    events:
+      - http:
+          path: query_user_by_filters
           method: post
           cors: true
 
@@ -55,3 +90,7 @@ custom:
   serverless-offline:
     httpPort: 3002
     lambdaPort: 3003
+  usersTableName:  ${self:service}-users 
+
+resources:
+  - ${file(resources.yml)}

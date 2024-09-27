@@ -1,0 +1,10 @@
+statements:
+  - Effect: Allow
+    Action:
+      - dynamodb:Query
+      - dynamodb:Scan
+      - dynamodb:GetItem
+      - dynamodb:PutItem
+      - dynamodb:UpdateItem
+    Resource:
+      - arn:aws:dynamodb:${self:provider.region}:*:table/${self:custom.usersTableName}  # Access to the table
