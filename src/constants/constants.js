@@ -1,3 +1,5 @@
+'use strict'
+
 const USER_CUSTOMER_ROLE = 'CUSTOMER'
 const USER_VENDOR_ROLE = 'VENDOR'
 const USER_ADMIN_ROLE = 'ADMIN'

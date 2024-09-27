@@ -73,10 +73,54 @@ const updateUser = async (userPayload) => {
   }
 }
 
+/**
+ * Get user details by mobile number
+ * @async
+ * @param {String} mobileNumber - User mobile number
+ * @returns {Promise<Object>}
+ */
+const getUserByMobileNumber = async (mobileNumber) => {
+  try {
+    console.log(`getUserByMobileNumber:: Args:: ${{ mobileNumber }}`)
+    const users = await queryUsers({
+      filters: {
+        phone: mobileNumber,
+      },
+    })
+    const user = users?.[0]
+
+    if (!user) {
+      return {
+        status: false,
+        statusCode: 404,
+        message: 'Account Not Found',
+      }
+    }
+
+    return {
+      status: true,
+      statusCode: 200,
+      message: 'Get User Details Success',
+      data: user,
+    }
+  } catch (error) {
+    console.error(`getUserByMobileNumber:: ${error?.message}`)
+    console.error(error)
+    return {
+      status: false,
+      statusCode: 500,
+      message: 'Error in getting User Details',
+      error: { message: error?.message, error },
+    }
+  }
+}
+
 module.exports = {
   getUserById,
   createUser,
   getUserByIds,
   queryUsers,
   updateUser,
+
+  getUserByMobileNumber,
 }

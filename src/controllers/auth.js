@@ -1,64 +1,75 @@
-const { USER_ROLES } = require('../constants/constants')
+'use strict'
 
-function login({ email, mobileNumber, role }) {
-  console.log({ email, mobileNumber, role })
-  // Validation
-  if (!role || USER_ROLES.includes(role.toUpperCase())) {
-    return {
-      status: false,
-      message: 'Invalid Role',
+const { SignJWT } = require('jose')
+
+const { getUserByMobileNumber } = require('./users')
+const { DEFAULT_AUTH_EXPIRY_TIME } = require('../constants/auth-constants')
+
+/**
+ * Verify User Login Otp
+ * @async
+ * @param {{ loginId: String; otp: String; }}
+ * @returns {Proimse<{status: Boolean; message: String; data?: {token: String;}}>}
+ */
+const verifyLoginOtp = async ({ loginId, otp }) => {
+  try {
+    // Assuming loginId to be mobile number for all users
+    console.log(`verifyLoginOtp:: Args:: ${{ loginId, otp }}`)
+    const userDetailsResponse = await getUserByMobileNumber(loginId)
+
+    if (!userDetailsResponse.status) {
+      return {
+        ...userDetailsResponse,
+      }
     }
-  }
 
-  // User Exists
-  return {
-    status: true,
-    message: 'Success',
-  }
-}
+    const user = userDetailsResponse.data
+    if (user.otp !== otp) {
+      return {
+        status: false,
+        statusCode: 401,
+        message: 'Wrong OTP',
+      }
+    }
 
-function generateOtp({ email, mobileNumber, role }) {
-  console.log({ email, mobileNumber, role })
-
-  return {
-    status: true,
-    message: 'Otp Generated',
-    otpId: 123,
-  }
-}
-
-function verifyLogin({ loginId, otp, role }) {
-  console.log({ loginId, otp, role })
-
-  return {
-    status: true,
-    message: 'Login Success',
-    data: {
-      token: '1234',
-      userId: 1234,
-    },
-  }
-}
-
-function verifyToken({ authToken }) {
-  console.log({ authToken })
-
-  if (Math.random() > 0.5) {
     return {
       status: true,
-      message: 'Valid Token',
+      statusCode: 200,
+      message: 'Login Success',
+      data: {
+        token: await generateUserLoginToken(constructPaylodForUserAuth(user)),
+      },
     }
-  } else {
+  } catch (error) {
+    console.error(`verifyLoginOtp:: ${error?.message}`)
+    console.error(error)
     return {
       status: false,
-      message: 'Token Expired',
+      statusCode: 500,
+      message: 'Error in Verifying Login Otp',
+      error: { message: error?.message, error },
     }
+  }
+}
+
+const generateUserLoginToken = async (payload) => {
+  const jwt = await new SignJWT(payload)
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime(DEFAULT_AUTH_EXPIRY_TIME)
+    .sign(process.env.ACCESS_TOKEN_SECRET)
+
+  return jwt
+}
+
+const constructPaylodForUserAuth = (user) => {
+  const { userId, role } = user
+  return {
+    userId,
+    role,
   }
 }
 
 module.exports = {
-  login,
-  generateOtp,
-  verifyLogin,
-  verifyToken,
+  verifyLoginOtp,
 }

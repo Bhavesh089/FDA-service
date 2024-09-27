@@ -1,10 +1,12 @@
+'use strict'
+
 const Joi = require('joi')
 
 const { USER_ROLES, ACCOUNT_STATUSES } = require('../constants/constants')
 
 // Define User schema with Joi validation
 const userSchema = Joi.object({
-  user_id: Joi.string(),
+  userId: Joi.string(),
   name: Joi.string().required(),
   email: Joi.string().email().optional(),
   phone: Joi.string().min(10).max(15).required(),
@@ -13,15 +15,15 @@ const userSchema = Joi.object({
   role: Joi.string()
     .valid(...USER_ROLES)
     .required(),
-  total_earnings: Joi.number().optional(),
-  account_status: Joi.string()
+  totalEarnings: Joi.number().optional(),
+  accountStatus: Joi.string()
     .valid(...ACCOUNT_STATUSES)
     .required(),
-  created_at: Joi.date().required(),
+  createdAt: Joi.date().required(),
   address: Joi.string().optional(),
 
-  registered_restaurants: Joi.array().items(Joi.string()).optional(),
-  order_history: Joi.array().items(Joi.string()).optional(),
+  registeredRestaurants: Joi.array().items(Joi.string()).optional(),
+  orderHistory: Joi.array().items(Joi.string()).optional(),
   favorites: Joi.array().items(Joi.string()).optional(),
 })
 
