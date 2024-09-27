@@ -18,7 +18,7 @@ const { TABLE_USERS } = require('../model/user-model')
  */
 const getUserById = async ({ id }) => {
   try {
-    console.log(`getUserById:: Args:: ${{ id }}`)
+    console.log(`getUserById::Params::${{ id }}`)
     const user = await getItemById(TABLE_USERS, 'userId', id)
     console.log(user)
 
@@ -37,7 +37,7 @@ const getUserById = async ({ id }) => {
       data: user,
     }
   } catch (error) {
-    console.error(`getUserById:: ${error?.message}`)
+    console.error(`getUserById::${error?.message}`)
     console.error(error)
     return {
       status: false,
@@ -114,7 +114,7 @@ const updateUser = async (userPayload) => {
  */
 const getUserByMobileNumber = async (mobileNumber) => {
   try {
-    console.log(`getUserByMobileNumber:: Args:: ${{ mobileNumber }}`)
+    console.log(`getUserByMobileNumber::Params::${{ mobileNumber }}`)
     const users = await queryUsers({
       filters: {
         phone: mobileNumber,
@@ -137,7 +137,7 @@ const getUserByMobileNumber = async (mobileNumber) => {
       data: user,
     }
   } catch (error) {
-    console.error(`getUserByMobileNumber:: ${error?.message}`)
+    console.error(`getUserByMobileNumber::${error?.message}`)
     console.error(error)
     return {
       status: false,
@@ -147,6 +147,43 @@ const getUserByMobileNumber = async (mobileNumber) => {
     }
   }
 }
+
+// #IMPLEMENT
+// const get = async (mobileNumber) => {
+//   try {
+//     console.log(`getUserByMobileNumber::Params:: ${{ mobileNumber }}`)
+//     const users = await queryUsers({
+//       filters: {
+//         phone: mobileNumber,
+//       },
+//     })
+//     const user = users?.[0]
+
+//     if (!user) {
+//       return {
+//         status: false,
+//         statusCode: 404,
+//         message: 'User Not Found',
+//       }
+//     }
+
+//     return {
+//       status: true,
+//       statusCode: 200,
+//       message: 'Get User Success',
+//       data: user,
+//     }
+//   } catch (error) {
+//     console.error(`getUserByMobileNumber:: ${error?.message}`)
+//     console.error(error)
+//     return {
+//       status: false,
+//       statusCode: 500,
+//       message: 'Error in getting User',
+//       error: { message: error?.message, error },
+//     }
+//   }
+// }
 
 module.exports = {
   getUserById,
