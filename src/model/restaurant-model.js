@@ -2,9 +2,8 @@
 
 const Joi = require('joi')
 
-// Define User schema with Joi validation
 const restaurantsSchema = Joi.object({
-  restaurantId: Joi.string(), // #CHECK b
+  restaurantId: Joi.string(),
   userId: Joi.string().required(),
   name: Joi.string().required(),
   description: Joi.string().required(),

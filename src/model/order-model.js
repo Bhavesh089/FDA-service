@@ -2,9 +2,8 @@
 
 const Joi = require('joi')
 
-// Define User schema with Joi validation
-const orderAndPaymentSchema = Joi.object({
-  orderId: Joi.string(), // #CHECK b
+const orderSchema = Joi.object({
+  orderId: Joi.string(),
   userId: Joi.string().required(),
   restaurantId: Joi.string().required(),
   orderItems: Joi.array().items(Joi.string()).required(),
@@ -15,13 +14,6 @@ const orderAndPaymentSchema = Joi.object({
   orderStatus: Joi.string().required(),
   orderPlacedAt: Joi.date().required(),
   orderCompletedAt: Joi.date().required(),
-
-  // Payment Fields
-  paymentMethod: Joi.string().required(),
-  paymentAmount: Joi.number().required(),
-  paymentDoneAt: Joi.date().required(),
-  paymentStatus: Joi.string().required(),
-  type: Joi.string().required(),
 })
 
-module.exports = { TABLE_ORDERS_AND_PAYMENTS: 'orders_and_payments' }
+module.exports = { TABLE_ORDERS: 'orders' }

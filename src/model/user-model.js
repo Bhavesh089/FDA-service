@@ -4,7 +4,6 @@ const Joi = require('joi')
 
 const { USER_ROLES, ACCOUNT_STATUSES } = require('../constants/constants')
 
-// Define User schema with Joi validation
 const userSchema = Joi.object({
   userId: Joi.string(),
   name: Joi.string().required(),
