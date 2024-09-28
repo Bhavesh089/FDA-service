@@ -77,10 +77,10 @@ const getUserByIds = async ({ userIds }) => {
   }
 }
 
-const queryUsers = async ({ primaryKey = {}, filters = {} }) => {
+const queryUsersByFilters = async ({ primaryKey = {}, filters = {} }) => {
   try {
     console.log(
-      `queryUsers::Params::${JSON.stringify({ primaryKey, filters }, null, 2)}`
+      `queryUsersByFilters::Params::${JSON.stringify({ primaryKey, filters }, null, 2)}`
     )
     // console.log(primaryKey, filters, "this is filters-->")
     const result = await getItemsWithFilters(TABLE_USERS, filters)
@@ -96,7 +96,7 @@ const queryUsers = async ({ primaryKey = {}, filters = {} }) => {
     console.log(result)
     return handleResponse(true, 200, 'Query Users Success', result)
   } catch (error) {
-    return handleErrorResponse(error, 'queryUsers')
+    return handleErrorResponse(error, 'queryUsersByFilters')
   }
 }
 
@@ -145,7 +145,7 @@ module.exports = {
   getUserById,
   createUser,
   getUserByIds,
-  queryUsers,
+  queryUsers: queryUsersByFilters,
   updateUser,
 
   getUserByMobileNumber,
