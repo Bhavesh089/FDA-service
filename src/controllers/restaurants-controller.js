@@ -45,7 +45,32 @@ const getRestaurantsByIds = async ({ ids }) => {
   }
 }
 
+/**
+ * Get Restaurants By name
+ * @async
+ * @param {String[]} name
+ * @returns {Promise<Object[]>}
+ */
+const getRestaurantsByName = async ({ name }) => {
+  try {
+    console.log(`getRestaurantsByName::Params::${{ name }}`)
+
+    const result = await getItemsWithFilters({
+      filters: {
+        conditions: [{ field: 'name', operator: 'contains', value: name }],
+      },
+    })
+
+    console.log(result)
+
+    return handleResponse(true, 200, 'Get Restaurants by name Success', result)
+  } catch (error) {
+    return handleErrorResponse(error, 'getRestaurantsByName')
+  }
+}
+
 module.exports = {
   getRestaurantById,
   getRestaurantsByIds,
+  getRestaurantsByName,
 }
