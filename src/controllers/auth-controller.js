@@ -4,6 +4,10 @@ const { SignJWT } = require('jose')
 
 const { getUserByMobileNumber } = require('./users-controller')
 const { DEFAULT_AUTH_EXPIRY_TIME } = require('../constants/auth-constants')
+const {
+  handleResponse,
+  handleErrorResponse,
+} = require('../lib/controller-utils')
 
 /**
  * Verify User Login Otp
@@ -25,30 +29,14 @@ const verifyLoginOtp = async ({ loginId, otp }) => {
 
     const user = userDetailsResponse.data
     if (user.otp !== otp) {
-      return {
-        status: false,
-        statusCode: 401,
-        message: 'Wrong OTP',
-      }
+      return handleResponse(false, 401, 'Wrong OTP')
     }
 
-    return {
-      status: true,
-      statusCode: 200,
-      message: 'Login Success',
-      data: {
-        token: await generateUserLoginToken(constructPaylodForUserAuth(user)),
-      },
-    }
+    const token = await generateUserLoginToken(constructPaylodForUserAuth(user))
+
+    return handleResponse(true, 200, 'Login Success', { token })
   } catch (error) {
-    console.error(`verifyLoginOtp:: ${error?.message}`)
-    console.error(error)
-    return {
-      status: false,
-      statusCode: 500,
-      message: 'Error in Verifying Login Otp',
-      error: { message: error?.message, error },
-    }
+    return handleErrorResponse(error, 'verifyLoginOtp')
   }
 }
 
