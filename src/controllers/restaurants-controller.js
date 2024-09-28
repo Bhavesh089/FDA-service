@@ -1,3 +1,7 @@
+const {
+  handleResponse,
+  handleErrorResponse,
+} = require('../lib/controller-utils')
 const { TABLE_RESTAURANTS } = require('../model/restaurant-model')
 const { getItemById, getByItemIds } = require('../services/dynamoService')
 
@@ -13,29 +17,13 @@ const getRestaurantById = async ({ id }) => {
     const restaurant = await getItemById(TABLE_RESTAURANTS, 'restaurantId', id)
     console.log(restaurant)
 
-    if (!restaurant || !restaurant.restaurantId) {
-      return {
-        status: false,
-        statusCode: 404,
-        message: 'Restaurant Not Found',
-      }
+    if (!restaurant || !restaurant?.restaurantId) {
+      return handleResponse(false, 404, 'Restaurant Not Found')
     }
 
-    return {
-      status: true,
-      statusCode: 200,
-      message: 'Get Restaurant Success',
-      data: user,
-    }
+    return handleResponse(true, 200, 'Get Restaurant Success', restaurant)
   } catch (error) {
-    console.error(`getRestaurantById:: ${error?.message}`)
-    console.error(error)
-    return {
-      status: false,
-      statusCode: 500,
-      message: 'Error in getting Restaurant by id',
-      error: { message: error?.message, error },
-    }
+    return handleErrorResponse(error, 'getRestaurantById')
   }
 }
 
@@ -51,16 +39,9 @@ const getRestaurantsByIds = async ({ ids }) => {
     const result = await getByItemIds(TABLE_RESTAURANTS, { restaurantId: ids })
     console.log(result)
 
-    return result
+    return handleResponse(true, 200, 'Get Restaurants Success', result)
   } catch (error) {
-    console.error(`getRestaurantsByIds::${error?.message}`)
-    console.error(error)
-    return {
-      status: false,
-      statusCode: 500,
-      message: 'Error in getting Restaurants by ids',
-      error: { message: error?.message, error },
-    }
+    return handleErrorResponse(error, 'getRestaurantsByIds')
   }
 }
 

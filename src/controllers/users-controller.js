@@ -27,7 +27,7 @@ const getUserById = async ({ id }) => {
     const user = await getItemById(TABLE_USERS, 'userId', id)
     console.log(user)
 
-    if (!user || !user.userId) {
+    if (!user || !user?.userId) {
       return handleResponse(false, 404, 'User Not Found')
     }
 
