@@ -13,73 +13,114 @@ provider:
     USERS_TABLE: ${self:custom.usersTableName}
 
 functions:
-  login:
-    handler: src/handlers/auth.login
+# Auth
+  verifyLoginOtp:
+    handler: src/handlers/auth.verifyLoginOtp
     events:
       - http:
-          path: login
+          path: verifyLoginOtp
           method: post
           cors: true
-  
-  generateOtp:
-    handler: src/handlers/auth.generateOtp
-    events:
-      - http:
-          path: generate_otp
-          method: post
-          cors: true
-
-  verifyLogin:
-    handler: src/handlers/auth.verifyLogin
-    events:
-      - http:
-          path: verify_login
-          method: post
-          cors: true
-
-  verifyToken:
-    handler: src/handlers/auth.verifyToken
-    events:
-      - http:
-          path: verify_token
-          method: post
-          cors: true
-
-  getuser_by_id:
+# Users
+  getUserById:
     handler: src/handlers/users.getUserById
     events:
       - http:
-          path: get_user
+          path: getUserById
           method: post
           cors: true
-  create_user:
+  createUser:
     handler: src/handlers/users.createUser
     events:
       - http:
-          path: create_user
+          path: createUser
           method: post
           cors: true
-  update_user:
+  getUserByIds:
+    handler: src/handlers/users.getUserByIds
+    events:
+      - http:
+          path: getUserByIds
+          method: post
+          cors: true
+  updateUser:
     handler: src/handlers/users.updateUser
     events:
       - http:
           path: updateUser
           method: post
           cors: true
-
-  getuser_by_ids:
-    handler: src/handlers/users.getUserByIds
+  queryUsersByFilters:
+    handler: src/handlers/users.queryUsersByFilters
     events:
       - http:
-          path: getuser_by_ids
+          path: queryUsersByFilters
           method: post
           cors: true
-
-  query_user_by_filters:
-    handler: src/handlers/users.queryUsers
+# Restaurants
+  getRestaurantById:
+      handler: src/handlers/restaurants-controller.getRestaurantById
+      events:
+        - http:
+            path: getRestaurantById
+            method: post
+            cors: true
+  getRestaurantsByIds:
+    handler: src/handlers/restaurants-controller.getRestaurantsByIds
     events:
       - http:
-          path: query_user_by_filters
+          path: getRestaurantsByIds
+          method: post
+          cors: true
+  getRestaurantsByName:
+    handler: src/handlers/restaurants-controller.getRestaurantsByName
+    events:
+      - http:
+          path: getRestaurantsByName
+          method: post
+          cors: true
+# Menu Items
+  getMenuItemById:
+      handler: src/handlers/menu-items-controller.getMenuItemById
+      events:
+        - http:
+            path: getMenuItemById
+            method: post
+            cors: true
+  getMenuItemsByIds:
+    handler: src/handlers/menu-items-controller.getMenuItemsByIds
+    events:
+      - http:
+          path: getMenuItemsByIds
+          method: post
+          cors: true
+  getMenuItemsByName:
+    handler: src/handlers/menu-items-controller.getMenuItemsByName
+    events:
+      - http:
+          path: getMenuItemsByName
+          method: post
+          cors: true
+# Orders
+  getOrderById:
+      handler: src/handlers/orders-controller.getOrderById
+      events:
+        - http:
+            path: getOrderById
+            method: post
+            cors: true
+  getOrdersByIds:
+    handler: src/handlers/orders-controller.getOrdersByIds
+    events:
+      - http:
+          path: getOrdersByIds
+          method: post
+          cors: true
+  getOrdersByUserId:
+    handler: src/handlers/orders-controller.getOrdersByUserId
+    events:
+      - http:
+          path: getOrdersByUserId
           method: post
           cors: true
 
