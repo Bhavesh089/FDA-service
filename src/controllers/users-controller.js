@@ -124,12 +124,9 @@ const updateUser = async (userPayload) => {
 const getUserByMobileNumber = async (mobileNumber) => {
   try {
     console.log(`getUserByMobileNumber::Params::${{ mobileNumber }}`)
-    const users = await getItemsWithFilters({
+    const users = await getItemsWithFilters(TABLE_USERS, {
       filters: {
-        conditions: [
-          { field: 'phone', operator: '=', value: mobileNumber },
-          { field: 'role', operator: '=', value: USER_CUSTOMER_ROLE },
-        ],
+        conditions: [{ field: 'phone', operator: '=', value: mobileNumber }],
       },
     })
     const user = users?.[0]

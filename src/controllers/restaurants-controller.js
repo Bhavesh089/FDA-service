@@ -3,7 +3,11 @@ const {
   handleErrorResponse,
 } = require('../lib/controller-utils')
 const { TABLE_RESTAURANTS } = require('../model/restaurant-model')
-const { getItemById, getByItemIds } = require('../services/dynamoService')
+const {
+  getItemById,
+  getByItemIds,
+  getItemsWithFilters,
+} = require('../services/dynamoService')
 
 /**
  * Get Restaurant By restaurantId
@@ -55,7 +59,7 @@ const getRestaurantsByName = async ({ name }) => {
   try {
     console.log(`getRestaurantsByName::Params::${{ name }}`)
 
-    const result = await getItemsWithFilters({
+    const result = await getItemsWithFilters(TABLE_RESTAURANTS, {
       filters: {
         conditions: [{ field: 'name', operator: 'contains', value: name }],
       },
