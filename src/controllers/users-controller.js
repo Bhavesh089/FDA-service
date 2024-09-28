@@ -9,6 +9,11 @@ const {
   updateItem,
 } = require('../services/dynamoService')
 const { TABLE_USERS } = require('../model/user-model')
+const { USER_CUSTOMER_ROLE } = require('../constants/constants')
+const {
+  handleErrorResponse,
+  handleResponse,
+} = require('../lib/controller-utils')
 
 /**
  * Get User By userId
@@ -23,58 +28,60 @@ const getUserById = async ({ id }) => {
     console.log(user)
 
     if (!user || !user.userId) {
-      return {
-        status: false,
-        statusCode: 404,
-        message: 'User Not Found',
-      }
+      return handleResponse(false, 404, 'User Not Found')
     }
 
-    return {
-      status: true,
-      statusCode: 200,
-      message: 'Get User Success',
-      data: user,
-    }
+    return handleResponse(true, 200, 'Get User Success', user)
   } catch (error) {
-    console.error(`getUserById::${error?.message}`)
-    console.error(error)
-    return {
-      status: false,
-      statusCode: 500,
-      message: 'Error in getting user by id',
-      error: { message: error?.message, error },
-    }
+    return handleErrorResponse(error, 'getUserById')
   }
 }
 
-// #TODO - B
+/**
+ * Create User
+ * @async
+ * @param {User} userPayload
+ * @returns {Promise<Object>}
+ */
 const createUser = async (userPayload) => {
   try {
+    console.log(
+      `createUser::Params::${{ userPayload: JSON.stringify(userPayload, null, 2) }}`
+    )
     const result = await createItems(TABLE_USERS, userPayload, 'user')
-    console.log(result, 'this is the result')
-    return result
+    console.log(result)
+
+    return handleResponse(true, 201, 'Create User Success', result)
   } catch (error) {
-    console.log(error, 'this is the error')
-    return { statusCode: 400, body: JSON.stringify({ error: error.message }) }
+    return handleErrorResponse(error, 'createUser')
   }
 }
 
-// #CHECK
-const getUserByIds = async ({ UserID }) => {
+/**
+ * Get Users by user ids
+ * @async
+ * @param {{ string[]}} userIds
+ * @returns {Proimse<Object[]>}
+ */
+const getUserByIds = async ({ userIds }) => {
   try {
+    console.log(
+      `getUserByIds::Params::${{ userIds: JSON.stringify(userIds, null, 2) }}`
+    )
     const result = await getByItemIds(TABLE_USERS, { UserID: UserID })
-    console.log(result, 'this is the result')
-    return result
+    console.log(result)
+
+    return handleResponse(true, 200, 'Get Users Success', result)
   } catch (error) {
-    console.log(error, 'this is the error')
-    return { statusCode: 400, body: JSON.stringify({ error: error.message }) }
+    return handleErrorResponse(error, 'getUserByIds')
   }
 }
 
-// #TODO - B
 const queryUsers = async ({ primaryKey = {}, filters = {} }) => {
   try {
+    console.log(
+      `queryUsers::Params::${JSON.stringify({ primaryKey, filters }, null, 2)}`
+    )
     // console.log(primaryKey, filters, "this is filters-->")
     const result = await getItemsWithFilters(TABLE_USERS, filters)
     // const result = await queryItems("fda-users", primaryKey, filters);
@@ -85,24 +92,26 @@ const queryUsers = async ({ primaryKey = {}, filters = {} }) => {
     //       { field: 'RegisteredRestaurants', operator: 'contains', value: 'rest001' }, // Check if RegisteredRestaurants contains 'rest001'
     //     ],
     //   };
-    console.log(filters, primaryKey)
     // const result = await queryItemsWithFilters("fda-users", primaryKey, filters);
-    console.log(result, 'this is the result')
-    return result
+    console.log(result)
+    return handleResponse(true, 200, 'Query Users Success', result)
   } catch (error) {
-    console.log(error, 'this is the error')
-    return { statusCode: 400, body: JSON.stringify({ error: error.message }) }
+    return handleErrorResponse(error, 'queryUsers')
   }
 }
 
+// Find Criteria? - #CHECK
 const updateUser = async (userPayload) => {
   try {
+    console.log(
+      `queryUsers::Params::${JSON.stringify({ primaryKey, filters }, null, 2)}`
+    )
     const result = await updateItem(TABLE_USERS, userPayload, ['user'])
-    console.log(result, 'this is the result')
-    return result
+    console.log(result)
+
+    return handleResponse(true, 200, 'Update User Success', result)
   } catch (error) {
-    console.log(error, 'this is the error')
-    return { statusCode: 400, body: JSON.stringify({ error: error.message }) }
+    return handleErrorResponse(error, 'updateUser')
   }
 }
 
@@ -115,75 +124,25 @@ const updateUser = async (userPayload) => {
 const getUserByMobileNumber = async (mobileNumber) => {
   try {
     console.log(`getUserByMobileNumber::Params::${{ mobileNumber }}`)
-    const users = await queryUsers({
+    const users = await getItemsWithFilters({
       filters: {
-        phone: mobileNumber,
+        conditions: [
+          { field: 'phone', operator: '=', value: mobileNumber },
+          { field: 'role', operator: '=', value: USER_CUSTOMER_ROLE },
+        ],
       },
     })
     const user = users?.[0]
 
-    if (!user) {
-      return {
-        status: false,
-        statusCode: 404,
-        message: 'User Not Found',
-      }
+    if (!user || !user?.userId) {
+      return handleResponse(false, 404, 'User Not Found')
     }
 
-    return {
-      status: true,
-      statusCode: 200,
-      message: 'Get User Success',
-      data: user,
-    }
+    return handleResponse(true, 200, 'Get User Success', user)
   } catch (error) {
-    console.error(`getUserByMobileNumber::${error?.message}`)
-    console.error(error)
-    return {
-      status: false,
-      statusCode: 500,
-      message: 'Error in getting User',
-      error: { message: error?.message, error },
-    }
+    return handleErrorResponse(error, 'getUserByMobileNumber')
   }
 }
-
-// #IMPLEMENT
-// const get = async (mobileNumber) => {
-//   try {
-//     console.log(`getUserByMobileNumber::Params:: ${{ mobileNumber }}`)
-//     const users = await queryUsers({
-//       filters: {
-//         phone: mobileNumber,
-//       },
-//     })
-//     const user = users?.[0]
-
-//     if (!user) {
-//       return {
-//         status: false,
-//         statusCode: 404,
-//         message: 'User Not Found',
-//       }
-//     }
-
-//     return {
-//       status: true,
-//       statusCode: 200,
-//       message: 'Get User Success',
-//       data: user,
-//     }
-//   } catch (error) {
-//     console.error(`getUserByMobileNumber:: ${error?.message}`)
-//     console.error(error)
-//     return {
-//       status: false,
-//       statusCode: 500,
-//       message: 'Error in getting User',
-//       error: { message: error?.message, error },
-//     }
-//   }
-// }
 
 module.exports = {
   getUserById,
