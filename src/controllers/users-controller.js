@@ -68,7 +68,7 @@ const getUserByIds = async ({ userIds }) => {
     console.log(
       `getUserByIds::Params::${{ userIds: JSON.stringify(userIds, null, 2) }}`
     )
-    const result = await getByItemIds(TABLE_USERS, { UserID: UserID })
+    const result = await getByItemIds(TABLE_USERS, { userId: userIds })
     console.log(result)
 
     return handleResponse(true, 200, 'Get Users Success', result)
