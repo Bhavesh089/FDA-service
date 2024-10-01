@@ -9,16 +9,16 @@ provider:
   iam:
     role:
       - ${file(iam.yml)}
-  environment:
-    USERS_TABLE: ${self:custom.usersTableName}
+  # environment:
+  #   USERS_TABLE: ${self:custom.usersTableName}
 
 functions:
 # Auth
-  verifyLoginOtp:
+  verify_login_otp:
     handler: src/handlers/auth.verifyLoginOtp
     events:
       - http:
-          path: verifyLoginOtp
+          path: verify_login_otp
           method: post
           cors: true
 # Users
@@ -131,7 +131,12 @@ custom:
   serverless-offline:
     httpPort: 3002
     lambdaPort: 3003
-  usersTableName:  ${self:service}-users 
+    
+  userTableName:  ${self:service}-${file(./src/constants/constants.js):USER_TABLE_NAME} 
+  restaurantTableName:  ${self:service}-${file(./src/constants/constants.js):RESTAURANT_TABLE_NAME}
+  menuItemTableName:  ${self:service}-${file(./src/constants/constants.js):MENU_ITEM_TABLE_NAME} 
+  categoryTableName:  ${self:service}-${file(./src/constants/constants.js):CATEGORY_TABLE_NAME} 
+  orderTableName:  ${self:service}-${file(./src/constants/constants.js):ORDER_TABLE_NAME} 
 
 resources:
   - ${file(resources.yml)}

@@ -1,16 +1,203 @@
 Resources:
   UsersTable:
-    Type: AWS::DynamoDB::Table
+    Type: "AWS::DynamoDB::Table"
     Properties:
-      TableName: ${self:custom.usersTableName}
+      TableName: ${self:custom.userTableName}
       AttributeDefinitions:
-        - AttributeName: "user"
+        - AttributeName: "id"
+          AttributeType: "S"
+        - AttributeName: "email"
+          AttributeType: "S"
+        - AttributeName: "phone"
+          AttributeType: "S"
+        - AttributeName: "role"
           AttributeType: "S"
       KeySchema:
-        - AttributeName: "user"
-          KeyType: "HASH"
-      ProvisionedThroughput:
+        - AttributeName: "id"
+          KeyType: "HASH"  # Partition Key
+      ProvisionedThroughput:                # Ensure this property is present
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
-      # UpdateReplacePolicy: Retain
-      # DeletionPolicy: Retain
+      GlobalSecondaryIndexes:
+        - IndexName: "email-index"
+          KeySchema:
+            - AttributeName: "email"
+              KeyType: "HASH"
+          Projection:
+            ProjectionType: "ALL"
+          ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+        - IndexName: "phone-index"
+          KeySchema:
+            - AttributeName: "phone"
+              KeyType: "HASH"
+          Projection:
+            ProjectionType: "ALL"
+          ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+        - IndexName: "role-index"
+          KeySchema:
+            - AttributeName: "role"
+              KeyType: "HASH"
+          Projection:
+            ProjectionType: "ALL"
+          ProvisionedThroughput:                # Ensure this property is present
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+
+  RestaurantsTable:
+    Type: "AWS::DynamoDB::Table"
+    Properties:
+      TableName: ${self:custom.restaurantTableName}
+      AttributeDefinitions:
+        - AttributeName: "id"
+          AttributeType: "S"
+        - AttributeName: "userid"
+          AttributeType: "S"
+        - AttributeName: "restaurant_name"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "id"
+          KeyType: "HASH"  # Partition Key
+      ProvisionedThroughput:                # Ensure this property is present
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      GlobalSecondaryIndexes:
+        - IndexName: "restaurant_name-index"
+          KeySchema:
+            - AttributeName: "restaurant_name"
+              KeyType: "HASH"
+          Projection:
+            ProjectionType: "ALL"
+          ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+        - IndexName: "user_id-index"
+          KeySchema:
+            - AttributeName: "userid"
+              KeyType: "HASH"
+          Projection:
+            ProjectionType: "ALL"
+          ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+  MenuItemsTable:
+    Type: "AWS::DynamoDB::Table"
+    Properties:
+      TableName: ${self:custom.menuItemTableName}
+      AttributeDefinitions:
+        - AttributeName: "id"
+          AttributeType: "S"
+        - AttributeName: "restaurant_id"
+          AttributeType: "S"
+        - AttributeName: "item_name"
+          AttributeType: "S"
+        - AttributeName: "category_id"
+          AttributeType: "S"  # Added missing category_id attribute
+      KeySchema:
+        - AttributeName: "id"
+          KeyType: "HASH"  # Partition Key
+      ProvisionedThroughput:                # Ensure this property is present
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      GlobalSecondaryIndexes:
+        - IndexName: "item_name-index"
+          KeySchema:
+            - AttributeName: "item_name"
+              KeyType: "HASH"
+          Projection:
+            ProjectionType: "ALL"
+          ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+        - IndexName: "category_id-index"  # Ensure proper index name format
+          KeySchema:
+            - AttributeName: "category_id"
+              KeyType: "HASH"
+          Projection:
+            ProjectionType: "ALL"
+          ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+        - IndexName: "restaurant_id-index"
+          KeySchema:
+            - AttributeName: "restaurant_id"
+              KeyType: "HASH"
+          Projection:
+            ProjectionType: "ALL"
+          ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+
+  OrdersTable:
+    Type: "AWS::DynamoDB::Table"
+    Properties:
+      TableName: ${self:custom.orderTableName}
+      AttributeDefinitions:
+        - AttributeName: "id"
+          AttributeType: "S"
+        - AttributeName: "type"
+          AttributeType: "S"
+        - AttributeName: "user_id"
+          AttributeType: "S"
+        - AttributeName: "restaurant_id"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "id"
+          KeyType: "HASH"  # Partition Key
+        - AttributeName: "type"
+          KeyType: "RANGE"  # Sort Key
+      ProvisionedThroughput:                # Ensure this property is present
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      GlobalSecondaryIndexes:
+        - IndexName: "user_id-index"
+          KeySchema:
+            - AttributeName: "user_id"
+              KeyType: "HASH"
+            - AttributeName: "type"
+              KeyType: "RANGE"
+          Projection:
+            ProjectionType: "ALL"
+          ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+        - IndexName: "restaurant_id-index"
+          KeySchema:
+            - AttributeName: "restaurant_id"
+              KeyType: "HASH"
+            - AttributeName: "type"
+              KeyType: "RANGE"
+          Projection:
+            ProjectionType: "ALL"
+          ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+
+  CategoryTable:
+    Type: "AWS::DynamoDB::Table"
+    Properties:
+      TableName: ${self:custom.categoryTableName}
+      AttributeDefinitions:
+        - AttributeName: "id"
+          AttributeType: "S"
+        - AttributeName: "category_name"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "id"
+          KeyType: "HASH"  # Partition Key
+      ProvisionedThroughput:                # Ensure this property is present
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      GlobalSecondaryIndexes:
+        - IndexName: "category_name-index"
+          KeySchema:
+            - AttributeName: "category_name"
+              KeyType: "HASH"
+          Projection:
+            ProjectionType: "ALL"
+          ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5

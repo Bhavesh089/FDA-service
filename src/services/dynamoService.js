@@ -1,8 +1,8 @@
 const AWS = require('aws-sdk')
 const dynamoDB = new AWS.DynamoDB.DocumentClient()
 const _ = require('lodash') // Import lodash
-const { validateUsers } = require('../model/userModel')
 const { v4: uuidv4 } = require('uuid')
+const { SERVICE } = require('../constants/constants')
 
 const buildExpression = (conditions, validOperators) => {
   const filterExpressions = []
@@ -59,91 +59,190 @@ const buildExpression = (conditions, validOperators) => {
 }
 
 // Optimized query function with filters
-const queryItemsWithFilters = async (tableName, primaryKey, filters) => {
-  if (!tableName || typeof tableName !== 'string') {
-    throw new Error('Invalid table name')
-  }
+const queryItemsWithFilters = async (tableName, primaryKey, filters, sortKey = null) => {
+    if (!tableName || typeof tableName !== 'string') {
+      throw new Error('Invalid table name');
+    }
+  
+    // Extract partition key
+    const [partitionKey, partitionValue] = Object.entries(primaryKey)[0];
+    if (!partitionKey || !partitionValue) {
+      throw new Error('Partition key information is required');
+    }
+  
+    // Check if filters are properly defined
+    if (!filters || !filters.conditions || !Array.isArray(filters.conditions)) {
+      throw new Error('Filters must include an array of conditions');
+    }
+  
+    const validOperators = ['=', '>', '<', '>=', '<=', '<>', 'IN', 'contains'];
+  
+    const {
+      filterExpressions,
+      expressionAttributeValues,
+      expressionAttributeNames,
+    } = buildExpression(filters.conditions, validOperators);
+  
+    // Partition key condition (compulsory)
+    const keyConditionExpressions = [`#pk = :pkVal`];
+    expressionAttributeNames['#pk'] = partitionKey;
+    expressionAttributeValues[':pkVal'] = partitionValue;
+  
+    // Sort key condition (optional)
+    if (sortKey) {
+      const [sortKeyName, sortKeyValue] = Object.entries(sortKey)[0];
+      if (sortKeyName && sortKeyValue) {
+        keyConditionExpressions.push(`#sk = :skVal`);
+        expressionAttributeNames['#sk'] = sortKeyName;
+        expressionAttributeValues[':skVal'] = sortKeyValue;
+      }
+    }
+  
+    const filterExpression =
+      filterExpressions.length > 0
+        ? filterExpressions.join(` ${filters.operator} `)
+        : null;
+  
+    const params = {
+      TableName: tableName,
+      KeyConditionExpression: keyConditionExpressions.join(' AND '), // Partition key and optional sort key
+      FilterExpression: filterExpression,
+      ExpressionAttributeValues: expressionAttributeValues,
+      ExpressionAttributeNames: expressionAttributeNames,
+    };
+  
+    try {
+      const result = await dynamoDB.query(params).promise();
+      return result.Items;
+    } catch (error) {
+      throw new Error(`Failed to retrieve items: ${error.message}`);
+    }
+  };
 
-  const [partitionKey, partitionValue] = Object.entries(primaryKey)[0]
-  if (!partitionKey || !partitionValue) {
-    throw new Error('Invalid primary key information')
-  }
+  /**
+ * Fetch items from a DynamoDB table using filters and an optional GSI indexed value.
+ *
+ * @param {string} tableName - The name of the DynamoDB table.
+ * @param {Object} [filters] - The filter conditions to apply (optional).
+ * @param {string} [indexName] - The name of the Global Secondary Index (GSI) to query (optional).
+ * @param {string} [gsiKey] - The key of the GSI indexed field (optional).
+ * @param {string|number} [gsiValue] - The value of the GSI indexed field (optional).
+ * @returns {Promise<Array>} The list of items that match the filters or GSI value.
+ * @throws {Error} If the table name is invalid.
+ */
+const getItemsWithFilters = async (tableName, filters = null, gsiKey = null, gsiValue = null) => {
+    tableName = `${SERVICE}-${tableName}`
+    console.log(gsiKey, gsiValue, 'this is value--->')
+    if (!tableName || typeof tableName !== 'string') {
+      throw new Error('Invalid table name');
+    }
 
-  if (!filters || !filters.conditions || !Array.isArray(filters.conditions)) {
-    throw new Error('Filters must include an array of conditions')
-  }
+    const params = {
+      TableName: tableName,
+    };
 
-  const validOperators = ['=', '>', '<', '>=', '<=', '<>', 'IN', 'contains']
+    // If filters are provided, build the filter expressions
+    if (filters && filters.conditions && Array.isArray(filters.conditions)) {
+      const validOperators = ['=', '>', '<', '>=', '<=', '<>', 'IN', 'contains'];
 
-  const {
-    filterExpressions,
-    expressionAttributeValues,
-    expressionAttributeNames,
-  } = buildExpression(filters.conditions, validOperators)
+      const {
+        filterExpressions,
+        expressionAttributeValues,
+        expressionAttributeNames,
+      } = buildExpression(filters.conditions, validOperators);
 
-  // Partition key condition
-  const partitionKeyCondition = `#pk = :pkVal`
-  expressionAttributeNames['#pk'] = partitionKey
-  expressionAttributeValues[':pkVal'] = partitionValue
+      const filterExpression =
+        filterExpressions.length > 0
+          ? filterExpressions.join(` ${filters.operator} `)
+          : null;
 
-  const filterExpression =
-    filterExpressions.length > 0
-      ? filterExpressions.join(` ${filters.operator} `)
-      : null
+      if (filterExpression) {
+        params.FilterExpression = filterExpression;
+        params.ExpressionAttributeValues = expressionAttributeValues;
+        params.ExpressionAttributeNames = expressionAttributeNames;
+      }
+    }
 
-  const params = {
-    TableName: tableName,
-    KeyConditionExpression: partitionKeyCondition,
-    FilterExpression: filterExpression,
-    ExpressionAttributeValues: expressionAttributeValues,
-    ExpressionAttributeNames: expressionAttributeNames,
-  }
+    // If a GSI index and value are provided, modify the query accordingly
+    if (gsiKey && gsiValue !== null) {
+      params.IndexName = `${gsiKey}-index`;
+      params.KeyConditionExpression = `${gsiKey} = :gsiValue`;
+      params.ExpressionAttributeValues = {
+        ...params.ExpressionAttributeValues, // Merge with existing values if filters are used
+        ':gsiValue': gsiValue
+      };
+    }
+    console.log(params, 'params-->')
+    try {
+      // Use query if GSI is specified, otherwise perform a scan
+      const result = gsiKey && gsiValue !== null
+        ? await dynamoDB.query(params).promise()
+        : await dynamoDB.scan(params).promise();
 
-  try {
-    const result = await dynamoDB.query(params).promise()
-    return result.Items
-  } catch (error) {
-    throw new Error(`Failed to retrieve items: ${error.message}`)
-  }
-}
+      return result.Items;
+    } catch (error) {
+      throw new Error(`Failed to retrieve items: ${error.message}`);
+    }
+  };
 
-// Optimized scan function with filters
-const getItemsWithFilters = async (tableName, filters) => {
-  if (!tableName || typeof tableName !== 'string') {
-    throw new Error('Invalid table name')
-  }
-
-  if (!filters || !filters.conditions || !Array.isArray(filters.conditions)) {
-    throw new Error('Filters must include an array of conditions')
-  }
-
-  const validOperators = ['=', '>', '<', '>=', '<=', '<>', 'IN', 'contains']
-
-  const {
-    filterExpressions,
-    expressionAttributeValues,
-    expressionAttributeNames,
-  } = buildExpression(filters.conditions, validOperators)
-
-  const filterExpression =
-    filterExpressions.length > 0
-      ? filterExpressions.join(` ${filters.operator} `)
-      : null
-
-  const params = {
-    TableName: tableName,
-    FilterExpression: filterExpression,
-    ExpressionAttributeValues: expressionAttributeValues,
-    ExpressionAttributeNames: expressionAttributeNames,
-  }
-
-  try {
-    const result = await dynamoDB.scan(params).promise()
-    return result.Items
-  } catch (error) {
-    throw new Error(`Failed to retrieve items: ${error.message}`)
-  }
-}
+// /**
+//  * Fetch items from a DynamoDB table using filters and an optional GSI indexed value.
+//  *
+//  * @param {string} tableName - The name of the DynamoDB table.
+//  * @param {Object} filters - The filter conditions to apply.
+//  * @param {string} [indexName] - The name of the Global Secondary Index (GSI) to query (optional).
+//  * @param {string} [gsiKey] - The key of the GSI indexed field (optional).
+//  * @param {string|number} [gsiValue] - The value of the GSI indexed field (optional).
+//  * @returns {Promise<Array>} The list of items that match the filters or GSI value.
+//  * @throws {Error} If the table name or filters are invalid.
+//  */
+// const getItemsWithFilters = async (tableName, filters, gsiKey = null, gsiValue = null) => {
+//     if (!tableName || typeof tableName !== 'string') {
+//       throw new Error('Invalid table name');
+//     }
+  
+//     if (!filters || !filters.conditions || !Array.isArray(filters.conditions)) {
+//       throw new Error('Filters must include an array of conditions');
+//     }
+  
+//     const validOperators = ['=', '>', '<', '>=', '<=', '<>', 'IN', 'contains'];
+  
+//     const {
+//       filterExpressions,
+//       expressionAttributeValues,
+//       expressionAttributeNames,
+//     } = buildExpression(filters.conditions, validOperators);
+  
+//     const filterExpression =
+//       filterExpressions.length > 0
+//         ? filterExpressions.join(` ${filters.operator} `)
+//         : null;
+  
+//     const params = {
+//       TableName: tableName,
+//       FilterExpression: filterExpression,
+//       ExpressionAttributeValues: expressionAttributeValues,
+//       ExpressionAttributeNames: expressionAttributeNames,
+//     };
+  
+//     // If a GSI index and value are provided, modify the query accordingly
+//     if (indexName && gsiKey && gsiValue !== null) {
+//       params.IndexName = `${gsiKey}-index`;
+//       params.KeyConditionExpression = `${gsiKey} = :gsiValue`;
+//       params.ExpressionAttributeValues[':gsiValue'] = gsiValue;
+//     }
+  
+//     try {
+//       // Use query if GSI is specified, otherwise perform a scan
+//       const result = indexName && gsiKey && gsiValue !== null
+//         ? await dynamoDB.query(params).promise()
+//         : await dynamoDB.scan(params).promise();
+        
+//       return result.Items;
+//     } catch (error) {
+//       throw new Error(`Failed to retrieve items: ${error.message}`);
+//     }
+//   };
 
 /**
  * Get an item by ID.
@@ -183,9 +282,9 @@ const putItem = async (tableName, item) => {
  * @param {Object|Array<Object>} items - Single item or array of items to be inserted.
  * @returns {Promise<Object>} The result of the put operation.
  */
-const createItems = async (tableName, items, entity) => {
+const createItems = async (tableName, items, validateUsers) => {
   // Check if items is an array for bulk create
-
+  tableName = `${SERVICE}-${tableName}`
   const { error } = validateUsers(items)
   if (error) {
     console.log()
@@ -194,7 +293,7 @@ const createItems = async (tableName, items, entity) => {
     )
   }
 
-  items = addUUIDToItems(items, entity)
+  items = addUUIDToItems(items)
   console.log(items, 'this is items-->')
   if (Array.isArray(items)) {
     const chunks = _.chunk(items, 25) // DynamoDB batch write supports up to 25 items at a time
@@ -240,15 +339,15 @@ const createItems = async (tableName, items, entity) => {
   }
 }
 // Helper function to add UUID to items if not present
-const addUUIDToItems = (items, entity) => {
+const addUUIDToItems = (items) => {
   // If it's a single item, check and add UUID
   if (!Array.isArray(items)) {
-    items[`${entity}`] = `${entity}#${uuidv4()}`
+    items['id'] = `${uuidv4()}`
   } else {
     // If it's an array, add UUID to each item that doesn't have one
     items = items.map((item) => {
       console.log(item, 'thjis isitem-->')
-      item[`${entity}`] = `${entity}#${uuidv4()}`
+      item['id'] = `${uuidv4()}`
       return item
     })
   }
