@@ -5,7 +5,6 @@ const Joi = require('joi')
 const { USER_ROLES, ACCOUNT_STATUSES } = require('../constants/constants')
 
 const userSchema = Joi.object({
-  userId: Joi.string(),
   name: Joi.string().required(),
   email: Joi.string().email().optional(),
   phone: Joi.string().min(10).max(15).required(),
@@ -14,15 +13,15 @@ const userSchema = Joi.object({
   role: Joi.string()
     .valid(...USER_ROLES)
     .required(),
-  totalEarnings: Joi.number().optional(),
-  accountStatus: Joi.string()
+  total_earnings: Joi.number().optional(),
+  account_status: Joi.string()
     .valid(...ACCOUNT_STATUSES)
     .required(),
   createdAt: Joi.date().required(),
   address: Joi.string().optional(),
 
-  registeredRestaurants: Joi.array().items(Joi.string()).optional(),
-  orderHistory: Joi.array().items(Joi.string()).optional(),
+  registered_restaurants: Joi.array().items(Joi.string()).optional(),
+  order_history: Joi.array().items(Joi.string()).optional(),
   favorites: Joi.array().items(Joi.string()).optional(),
 })
 
