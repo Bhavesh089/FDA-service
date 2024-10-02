@@ -54,7 +54,7 @@ Resources:
       AttributeDefinitions:
         - AttributeName: "id"
           AttributeType: "S"
-        - AttributeName: "userid"
+        - AttributeName: "user_id"
           AttributeType: "S"
         - AttributeName: "restaurant_name"
           AttributeType: "S"
@@ -76,7 +76,7 @@ Resources:
             WriteCapacityUnits: 5
         - IndexName: "user_id-index"
           KeySchema:
-            - AttributeName: "userid"
+            - AttributeName: "user_id"
               KeyType: "HASH"
           Projection:
             ProjectionType: "ALL"

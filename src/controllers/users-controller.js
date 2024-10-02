@@ -8,7 +8,7 @@ const {
   queryItemsWithFilters,
   updateItem,
 } = require('../services/dynamoService')
-const { TABLE_USERS } = require('../model/user-model')
+const { TABLE_USERS, validateUsers } = require('../model/user-model')
 const { USER_CUSTOMER_ROLE } = require('../constants/constants')
 const {
   handleErrorResponse,
@@ -48,7 +48,7 @@ const createUser = async (userPayload) => {
     console.log(
       `createUser::Params::${{ userPayload: JSON.stringify(userPayload, null, 2) }}`
     )
-    const result = await createItems(TABLE_USERS, userPayload, 'user')
+    const result = await createItems(TABLE_USERS, userPayload, validateUsers)
     console.log(result)
 
     return handleResponse(true, 201, 'Create User Success', result)

@@ -252,12 +252,14 @@ const getItemsWithFilters = async (tableName, filters = null, gsiKey = null, gsi
  * @returns {Promise<Object>} The retrieved item.
  */
 const getItemById = async (tableName, idKey, idValue) => {
+  tableName = `${SERVICE}-${tableName}`
   const params = {
     TableName: tableName,
     Key: {
       [idKey]: idValue,
     },
   }
+  console.log(params, 'this is params-->')
   const result = await dynamoDB.get(params).promise()
   return result.Item
 }
@@ -282,12 +284,11 @@ const putItem = async (tableName, item) => {
  * @param {Object|Array<Object>} items - Single item or array of items to be inserted.
  * @returns {Promise<Object>} The result of the put operation.
  */
-const createItems = async (tableName, items, validateUsers) => {
+const createItems = async (tableName, items, validate) => {
   // Check if items is an array for bulk create
   tableName = `${SERVICE}-${tableName}`
-  const { error } = validateUsers(items)
+  const { error } = validate(items)
   if (error) {
-    console.log()
     throw new Error(
       `Validation failed: ${error.details.map((err) => err.message).join(', ')}`
     )

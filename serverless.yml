@@ -58,22 +58,36 @@ functions:
           method: post
           cors: true
 # Restaurants
-  getRestaurantById:
-      handler: src/handlers/restaurants-controller.getRestaurantById
+  get_restaurant_by_id:
+      handler: src/handlers/restaurants.getRestaurantById
       events:
         - http:
-            path: getRestaurantById
+            path: get_restaurant_by_id
+            method: post
+            cors: true
+  get_all_restaurants:
+      handler: src/handlers/restaurants.getAllRestaurants
+      events:
+        - http:
+            path: get_all_restaurants
+            method: post
+            cors: true
+  create_restaurants:
+      handler: src/handlers/restaurants.createRestaurant
+      events:
+        - http:
+            path: create_restaurants
             method: post
             cors: true
   getRestaurantsByIds:
-    handler: src/handlers/restaurants-controller.getRestaurantsByIds
+    handler: src/handlers/restaurants.getRestaurantsByIds
     events:
       - http:
           path: getRestaurantsByIds
           method: post
           cors: true
   getRestaurantsByName:
-    handler: src/handlers/restaurants-controller.getRestaurantsByName
+    handler: src/handlers/restaurants.getRestaurantsByName
     events:
       - http:
           path: getRestaurantsByName
