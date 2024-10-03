@@ -24,10 +24,10 @@ const {
 const getUserById = async ({ id }) => {
   try {
     console.log(`getUserById::Params::${{ id }}`)
-    const user = await getItemById(TABLE_USERS, 'userId', id)
-    console.log(user)
+    const user = await getItemById(TABLE_USERS, 'user_id', id)
+    console.log(user,'user')
 
-    if (!user || !user?.userId) {
+    if (!user || !user?.id) {
       return handleResponse(false, 404, 'User Not Found')
     }
 
@@ -124,14 +124,17 @@ const updateUser = async (userPayload) => {
 const getUserByMobileNumber = async (mobileNumber) => {
   try {
     console.log(`getUserByMobileNumber::Params::${{ mobileNumber }}`)
-    const users = await getItemsWithFilters(TABLE_USERS, {
-      filters: {
-        conditions: [{ field: 'phone', operator: '=', value: mobileNumber }],
-      },
-    })
+    // const users = await getItemsWithFilters(TABLE_USERS, 
+    //    {
+    //     operator: 'AND',
+    //     conditions: [{ field: 'phone', operator: '=', value: mobileNumber },{ field: 'phone', operator: '=', value: "7777777777" }],
+    //   }
+    // )
+    const users = await getItemsWithFilters(TABLE_USERS, null, 'phone', mobileNumber
+   )
     const user = users?.[0]
 
-    if (!user || !user?.userId) {
+    if (!user || !user?.id) {
       return handleResponse(false, 404, 'User Not Found')
     }
 

@@ -1,0 +1,20 @@
+iamRoleStatements:
+  # Allow DynamoDB Access
+  - Effect: Allow
+    Action:
+      - dynamodb:*
+    Resource:
+      - "*"
+  # Allow Lambda Access
+  - Effect: Allow
+    Action:
+      - lambda:InvokeFunction
+      - lambda:InvokeAsync
+    Resource:
+      - "*"
+  # Allow SNS Access
+  - Effect: Allow
+    Action:
+      - sns:*
+    Resource:
+      - "*"

@@ -132,6 +132,7 @@ const queryItemsWithFilters = async (tableName, primaryKey, filters, sortKey = n
  */
 const getItemsWithFilters = async (tableName, filters = null, gsiKey = null, gsiValue = null) => {
     tableName = `${SERVICE}-${tableName}`
+    console.log(filters, 'this is filters-->')
     console.log(gsiKey, gsiValue, 'this is value--->')
     if (!tableName || typeof tableName !== 'string') {
       throw new Error('Invalid table name');
@@ -141,8 +142,10 @@ const getItemsWithFilters = async (tableName, filters = null, gsiKey = null, gsi
       TableName: tableName,
     };
 
+    // console.log( filters.filters.conditions, 'again')
     // If filters are provided, build the filter expressions
     if (filters && filters.conditions && Array.isArray(filters.conditions)) {
+
       const validOperators = ['=', '>', '<', '>=', '<=', '<>', 'IN', 'contains'];
 
       const {
@@ -178,7 +181,7 @@ const getItemsWithFilters = async (tableName, filters = null, gsiKey = null, gsi
       const result = gsiKey && gsiValue !== null
         ? await dynamoDB.query(params).promise()
         : await dynamoDB.scan(params).promise();
-
+        console.log(result, 'this is result')
       return result.Items;
     } catch (error) {
       throw new Error(`Failed to retrieve items: ${error.message}`);
@@ -259,7 +262,7 @@ const getItemById = async (tableName, idKey, idValue) => {
       [idKey]: idValue,
     },
   }
-  console.log(params, 'this is params-->')
+  console.log('Params from the get by id', params )
   const result = await dynamoDB.get(params).promise()
   return result.Item
 }
