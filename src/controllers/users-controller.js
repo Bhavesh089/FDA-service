@@ -24,7 +24,7 @@ const {
 const getUserById = async ({ id }) => {
   try {
     console.log(`getUserById::Params::${{ id }}`)
-    const user = await getItemById(TABLE_USERS, 'user_id', id)
+    const user = await getItemById(TABLE_USERS, 'id', id)
     console.log(user,'user')
 
     if (!user || !user?.id) {
@@ -104,16 +104,30 @@ const queryUsersByFilters = async ({ primaryKey = {}, filters = {} }) => {
 const updateUser = async (userPayload) => {
   try {
     console.log(
-      `queryUsers::Params::${JSON.stringify({ primaryKey, filters }, null, 2)}`
+      `updateUser::Params::${JSON.stringify({ userPayload }, null, 2)}`
     )
-    const result = await updateItem(TABLE_USERS, userPayload, ['user'])
+    const result = await updateItem(TABLE_USERS, userPayload)
     console.log(result)
 
-    return handleResponse(true, 200, 'Update User Success', result)
+    return handleResponse(true, 200, 'Update User Success', {user: result})
   } catch (error) {
     return handleErrorResponse(error, 'updateUser')
   }
 }
+
+// const updateUser = async (userPayload) => {
+//   try {
+//     console.log(
+//       `queryUsers::Params::${JSON.stringify({ primaryKey, filters }, null, 2)}`
+//     )
+//     const result = await updateItem(TABLE_USERS, userPayload, ['user'])
+//     console.log(result)
+
+//     return handleResponse(true, 200, 'Update User Success', result)
+//   } catch (error) {
+//     return handleErrorResponse(error, 'updateUser')
+//   }
+// }
 
 /**
  * Get user details by mobile number
@@ -124,12 +138,7 @@ const updateUser = async (userPayload) => {
 const getUserByMobileNumber = async (mobileNumber) => {
   try {
     console.log(`getUserByMobileNumber::Params::${{ mobileNumber }}`)
-    // const users = await getItemsWithFilters(TABLE_USERS, 
-    //    {
-    //     operator: 'AND',
-    //     conditions: [{ field: 'phone', operator: '=', value: mobileNumber },{ field: 'phone', operator: '=', value: "7777777777" }],
-    //   }
-    // )
+    
     const users = await getItemsWithFilters(TABLE_USERS, null, 'phone', mobileNumber
    )
     const user = users?.[0]
@@ -144,12 +153,26 @@ const getUserByMobileNumber = async (mobileNumber) => {
   }
 }
 
+const getAllUsers= async (params) => {
+  try {
+    console.log(
+      `getUsers::Params::${{ userPayload: JSON.stringify(params, null, 2) }}`
+    )
+    const result = await getItemsWithFilters(TABLE_USERS, {})
+    console.log(result)
+
+    return handleResponse(true, 200, 'Get Users Success', {users: result})
+  } catch (error) {
+    return handleErrorResponse(error, 'createUser')
+  }
+}
+
 module.exports = {
   getUserById,
   createUser,
   getUserByIds,
   queryUsers: queryUsersByFilters,
   updateUser,
-
+  getAllUsers,
   getUserByMobileNumber,
 }

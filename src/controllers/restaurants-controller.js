@@ -7,7 +7,8 @@ const {
   getItemById,
   getByItemIds,
   getItemsWithFilters,
-  createItems
+  createItems,
+  updateItem
 } = require('../services/dynamoService')
 
 
@@ -75,13 +76,28 @@ const getRestaurantById = async ({id}) => {
  */
 const getRestaurantsByIds = async ({ ids }) => {
   try {
+    console.log(ids, 'this is ids-->')
     console.log(`getRestaurantsByIds::Params::${{ ids }}`)
-    const result = await getByItemIds(TABLE_RESTAURANTS, { restaurantId: ids })
-    console.log(result)
+    const restaurants = await getByItemIds(TABLE_RESTAURANTS, { id: ids })
+    console.log(restaurants)
 
-    return handleResponse(true, 200, 'Get Restaurants Success', result)
+    return handleResponse(true, 200, 'Get Restaurants Success', {restaurants})
   } catch (error) {
     return handleErrorResponse(error, 'getRestaurantsByIds')
+  }
+}
+
+const updateRestaurant = async (restaurantPayload) => {
+  try {
+    console.log(
+      `updateRestaurant::Params::${JSON.stringify({ restaurantPayload }, null, 2)}`
+    )
+    const restaurant = await updateItem(TABLE_RESTAURANTS, restaurantPayload)
+    console.log(restaurant)
+
+    return handleResponse(true, 200, 'Update Restaurant Success', {restaurant})
+  } catch (error) {
+    return handleErrorResponse(error, 'updateRestaurant')
   }
 }
 
@@ -95,7 +111,7 @@ const getRestaurantsByName = async ({ name }) => {
   try {
     console.log(`getRestaurantsByName::Params::${{ name }}`)
 
-    const result = await getItemsWithFilters(TABLE_RESTAURANTS, {
+    const restaurants = await getItemsWithFilters(TABLE_RESTAURANTS, {
       filters: {
         conditions: [{ field: 'name', operator: 'contains', value: name }],
       },
@@ -103,9 +119,32 @@ const getRestaurantsByName = async ({ name }) => {
 
     console.log(result)
 
-    return handleResponse(true, 200, 'Get Restaurants by name Success', result)
+    return handleResponse(true, 200, 'Get Restaurants by name Success', restaurants)
   } catch (error) {
     return handleErrorResponse(error, 'getRestaurantsByName')
+  }
+}
+
+/**
+ * Get restaurants by User id
+ * @async
+ * @param {String} user_id - User
+ * @returns {Promise<Object>}
+ */
+const getRestaurantsByUserId = async ({user_id}) => {
+  try {
+    console.log(`getRestaurantsByUserId::Params::${{ user_id }}`)
+    
+    const restaurants = await getItemsWithFilters(TABLE_RESTAURANTS, null, 'user_id', user_id
+   )
+
+    if (!restaurants ||restaurants.length < 0) {
+      return handleResponse(false, 404, 'No restaurants are found for this user')
+    }
+
+    return handleResponse(true, 200, 'Get Restaurants success', {restaurants})
+  } catch (error) {
+    return handleErrorResponse(error, 'getRestaurantsByUserId')
   }
 }
 
@@ -114,5 +153,7 @@ module.exports = {
   getRestaurantById,
   getRestaurantsByIds,
   getRestaurantsByName,
-  getAllRestaurants
+  getAllRestaurants,
+  getRestaurantsByUserId,
+  updateRestaurant
 }

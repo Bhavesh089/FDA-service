@@ -254,7 +254,7 @@ const getItemsWithFilters = async (tableName, filters = null, gsiKey = null, gsi
  * @param {string|number} idValue - The ID value to look for.
  * @returns {Promise<Object>} The retrieved item.
  */
-const getItemById = async (tableName, idKey, idValue) => {
+const getItemById = async (tableName, idKey, idValue, sortKey) => {
   tableName = `${SERVICE}-${tableName}`
   const params = {
     TableName: tableName,
@@ -262,6 +262,10 @@ const getItemById = async (tableName, idKey, idValue) => {
       [idKey]: idValue,
     },
   }
+  if (sortKey) {
+    params.Key["type"] = sortKey;
+  }
+
   console.log('Params from the get by id', params )
   const result = await dynamoDB.get(params).promise()
   return result.Item
@@ -357,66 +361,6 @@ const addUUIDToItems = (items) => {
   }
   return items
 }
-
-// /**
-//  * Generic put operation to handle single or bulk create items into DynamoDB.
-//  * @param {string} tableName - The name of the DynamoDB table.
-//  * @param {Object|Array<Object>} items - Single item or array of items to be inserted.
-//  * @returns {Promise<Object>} The result of the put operation.
-//  */
-// const createItems = async (tableName, items, entity) => {
-//   // Add UUID to the item(s) if missing
-//   items = addUUIDToItems(items, entity);
-
-//   // Validate items (assume validateUsers function exists)
-//   const { error } = validateUsers(items);
-//   if (error) {
-//     throw new Error(`Validation failed: ${error.details.map(err => err.message).join(', ')}`);
-//   }
-
-//   if (Array.isArray(items)) {
-//     // Perform bulk create using Lodash's chunk (DynamoDB batch write supports up to 25 items at a time)
-//     const chunks = _.chunk(items, 25);
-//     const results = [];
-
-//     for (const chunk of chunks) {
-//       const params = {
-//         RequestItems: {
-//           [tableName]: chunk.map(item => ({
-//             PutRequest: {
-//               Item: item,
-//             },
-//           })),
-//         },
-//       };
-//       console.log(params.RequestItems['fda-users'], 'this is params-->')
-//       try {
-//         const result = await dynamoDB.batchWrite(params).promise();
-//         results.push(result);
-//         if (result.UnprocessedItems && result.UnprocessedItems[tableName]) {
-//           console.warn(`Unprocessed items: ${JSON.stringify(result.UnprocessedItems[tableName])}`);
-//         }
-//       } catch (error) {
-//         throw new Error(`Error in batch write: ${error.message}`);
-//       }
-//     }
-
-//     return results; // Return the results of all batch write operations
-//   } else {
-//     // Perform single create
-//     const params = {
-//       TableName: tableName,
-//       Item: items,
-//     };
-
-//     try {
-//         console.log(params, 'this is params-->')
-//       return await dynamoDB.put(params).promise();
-//     } catch (error) {
-//       throw new Error(`Error putting item: ${error.message}`);
-//     }
-//   }
-// };
 
 /**
  * Delete an item.
@@ -518,93 +462,297 @@ const queryByForeignKey = async (
  * @param {Object} fieldValues - An object where the keys are field names and the values are arrays of corresponding field values.
  * @returns {Promise<Array>} The list of retrieved items.
  */
-const getByItemIds = async (tableName, fieldValues) => {
-  if (typeof fieldValues !== 'object' || Array.isArray(fieldValues)) {
-    throw new Error(
-      'fieldValues must be an object with field names as keys and arrays of values.'
-    )
-  }
-
-  // Validate that all values in fieldValues are arrays
-  const keys = []
-  for (const [field, values] of Object.entries(fieldValues)) {
-    if (!Array.isArray(values)) {
-      throw new Error(`The value for field "${field}" must be an array.`)
+const getByItemIds = async (tableName, fieldValues, sortKey = null, isGSI=false) => {
+    tableName = `${SERVICE}-${tableName}`;
+    
+    if (typeof fieldValues !== 'object' || Array.isArray(fieldValues)) {
+      throw new Error(
+        'fieldValues must be an object with field names as keys and arrays of values.'
+      );
     }
 
-    // For each value in the array, create an object where the field is the key
-    values.forEach((value) => {
-      keys.push({ [field]: value })
-    })
-  }
-
-  const params = {
-    RequestItems: {
-      [tableName]: {
-        Keys: keys,
+    if (isGSI) {
+        // Handle retrieval using GSI (global secondary index)
+        const gsiItems = [];
+        for (const [gsiKey, gsiValues] of Object.entries(fieldValues)) {
+          if (!Array.isArray(gsiValues)) {
+            throw new Error(`The value for GSI field "${gsiKey}" must be an array.`);
+          }
+    
+          for (const gsiValue of gsiValues) {
+            const params = {
+              TableName: tableName,
+              IndexName: `${gsiKey}-index`, // Assuming the GSI name is the same as the field name
+              KeyConditionExpression: `${gsiKey} = :gsiValue`,
+              ExpressionAttributeValues: {
+                ':gsiValue': gsiValue,
+              },
+            };
+    
+            try {
+              const result = await dynamoDB.query(params).promise();
+              gsiItems.push(...result.Items);
+            } catch (error) {
+              throw new Error(`Error retrieving items by GSI "${gsiKey}": ${error.message}`);
+            }
+          }
+        }
+    
+        return gsiItems;
+      }
+  
+    // Validate that all values in fieldValues are arrays
+    const keys = [];
+    for (const [field, values] of Object.entries(fieldValues)) {
+      if (!Array.isArray(values)) {
+        throw new Error(`The value for field "${field}" must be an array.`);
+      }
+  
+      // For each value in the array, create an object where the field is the key
+      values.forEach((value) => {
+        const keyObject = { [field]: value };
+  
+        // If sortKey is provided, add it to the keyObject
+        if (sortKey && typeof sortKey === 'string') {
+          Object.assign(keyObject, {type: sortKey}); // Merge sortKey fields into keyObject
+        }
+  
+        keys.push(keyObject);
+      });
+    }
+    
+    console.log(keys, 'this is keys-->')
+    const params = {
+      RequestItems: {
+        [tableName]: {
+          Keys: keys,
+        },
       },
-    },
-  }
-
-  try {
-    const result = await dynamoDB.batchGet(params).promise()
-    return result.Responses[tableName] || []
-  } catch (error) {
-    throw new Error(`Error retrieving items: ${error.message}`)
-  }
-}
-
-const updateItem = async (tableName, item, keys) => {
-  // Validate inputs
-  if (!tableName || typeof tableName !== 'string') {
-    throw new Error('Invalid table name')
-  }
-
-  if (!item || typeof item !== 'object') {
-    throw new Error('Invalid item data')
-  }
-  // Specify your key names as required (replace 'PrimaryKey', 'SortKey')
-
-  const keyValues = {}
-  const updateExpressions = []
-  const expressionAttributeNames = {}
-  const expressionAttributeValues = {}
-
-  // Loop through item properties and handle keys separately
-  for (const [key, value] of Object.entries(item)) {
-    if (keys.includes(key)) {
-      // Add primary and sort key to the key values
-      keyValues[key] = value
-    } else {
-      // Add non-key attributes to UpdateExpression
-      const attributePlaceholder = `#${key}`
-      const valuePlaceholder = `:${key}`
-      updateExpressions.push(`${attributePlaceholder} = ${valuePlaceholder}`)
-      expressionAttributeNames[attributePlaceholder] = key
-      expressionAttributeValues[valuePlaceholder] = value
+    };
+  
+    try {
+      const result = await dynamoDB.batchGet(params).promise();
+      return result.Responses[tableName] || [];
+    } catch (error) {
+      throw new Error(`Error retrieving items: ${error.message}`);
     }
-  }
+  };
+  
 
-  // if (Object.keys(keyValues).length === 0) {
-  //   throw new Error('Primary key(s) not provided in the item');
-  // }
+//         tableName = `${SERVICE}-${tableName}`
+//   if (typeof fieldValues !== 'object' || Array.isArray(fieldValues)) {
+//     throw new Error(
+//       'fieldValues must be an object with field names as keys and arrays of values.'
+//     )
+//   }
 
-  const params = {
-    TableName: tableName,
-    Key: keyValues, // Provide the primary key values for identifying the record
-    UpdateExpression: `SET ${updateExpressions.join(', ')}`,
-    ExpressionAttributeNames: expressionAttributeNames,
-    ExpressionAttributeValues: expressionAttributeValues,
-    ReturnValues: 'ALL_NEW', // Return the updated item
-  }
+//   // Validate that all values in fieldValues are arrays
+//   const keys = []
+//   for (const [field, values] of Object.entries(fieldValues)) {
+//     if (!Array.isArray(values)) {
+//       throw new Error(`The value for field "${field}" must be an array.`)
+//     }
 
-  try {
-    const result = await dynamoDB.update(params).promise()
-    return result.Attributes // Return the updated attributes
-  } catch (error) {
-    throw new Error(`Failed to update item: ${error.message}`)
-  }
-}
+//     // For each value in the array, create an object where the field is the key
+//     values.forEach((value) => {
+//       keys.push({ [field]: value })
+//     })
+//   }
+
+//   const params = {
+//     RequestItems: {
+//       [tableName]: {
+//         Keys: keys,
+//       },
+//     },
+//   }
+//   try {
+//     // console.log(params.RequestItems["fda-orders"].Keys, 'this is params-->')
+//     const result = await dynamoDB.batchGet(params).promise()
+//     return result.Responses[tableName] || []
+//   } catch (error) {
+//     throw new Error(`Error retrieving items: ${error.message}`)
+//   }
+// }
+
+// const updateItem = async (tableName, item, keys) => {
+//   // Validate inputs
+//   if (!tableName || typeof tableName !== 'string') {
+//     throw new Error('Invalid table name')
+//   }
+
+//   if (!item || typeof item !== 'object') {
+//     throw new Error('Invalid item data')
+//   }
+//   // Specify your key names as required (replace 'PrimaryKey', 'SortKey')
+
+//   const keyValues = {}
+//   const updateExpressions = []
+//   const expressionAttributeNames = {}
+//   const expressionAttributeValues = {}
+
+//   // Loop through item properties and handle keys separately
+//   for (const [key, value] of Object.entries(item)) {
+//     if (keys.includes(key)) {
+//       // Add primary and sort key to the key values
+//       keyValues[key] = value
+//     } else {
+//       // Add non-key attributes to UpdateExpression
+//       const attributePlaceholder = `#${key}`
+//       const valuePlaceholder = `:${key}`
+//       updateExpressions.push(`${attributePlaceholder} = ${valuePlaceholder}`)
+//       expressionAttributeNames[attributePlaceholder] = key
+//       expressionAttributeValues[valuePlaceholder] = value
+//     }
+//   }
+
+//   // if (Object.keys(keyValues).length === 0) {
+//   //   throw new Error('Primary key(s) not provided in the item');
+//   // }
+
+//   const params = {
+//     TableName: tableName,
+//     Key: keyValues, // Provide the primary key values for identifying the record
+//     UpdateExpression: `SET ${updateExpressions.join(', ')}`,
+//     ExpressionAttributeNames: expressionAttributeNames,
+//     ExpressionAttributeValues: expressionAttributeValues,
+//     ReturnValues: 'ALL_NEW', // Return the updated item
+//   }
+
+//   try {
+//     const result = await dynamoDB.update(params).promise()
+//     return result.Attributes // Return the updated attributes
+//   } catch (error) {
+//     throw new Error(`Failed to update item: ${error.message}`)
+//   }
+// }
+
+// const updateItem = async (tableName, item) => {
+//     // Validate inputs
+//     tableName = `${SERVICE}-${tableName}`
+//     if (!tableName || typeof tableName !== 'string') {
+//       throw new Error('Invalid table name');
+//     }
+  
+//     if (!item || typeof item !== 'object') {
+//       throw new Error('Invalid item data');
+//     }
+  
+//     const keyValues = {};
+//     const updateExpressions = [];
+//     const expressionAttributeNames = {};
+//     const expressionAttributeValues = {};
+  
+//     // Assume primary keys are already part of the item
+//     for (const [key, value] of Object.entries(item)) {
+//       if (value === undefined || value === null) {
+//         throw new Error(`Invalid value for key: ${key}`);
+//       }
+  
+//       if (typeof value === 'string' || typeof value === 'number') {
+//         // Heuristic: treat the first encountered keys as the identifying attributes (this can be based on known PK structure)
+//         // In this case, we assume 'id' or keys containing 'Id' (case insensitive) are identifiers
+  
+//         if (key.toLowerCase().includes('id')) {
+//           keyValues[key] = value; // Treat as primary key
+//         } else {
+//           // Add non-key attributes to UpdateExpression
+//           const attributePlaceholder = `#${key}`;
+//           const valuePlaceholder = `:${key}`;
+//           updateExpressions.push(`${attributePlaceholder} = ${valuePlaceholder}`);
+//           expressionAttributeNames[attributePlaceholder] = key;
+//           expressionAttributeValues[valuePlaceholder] = value;
+//         }
+//       } else {
+//         throw new Error(`Unsupported type for key: ${key}`);
+//       }
+//     }
+  
+//     // Ensure that the key values are extracted
+//     if (Object.keys(keyValues).length === 0) {
+//       throw new Error('No primary key(s) detected');
+//     }
+  
+//     const params = {
+//       TableName: tableName,
+//       Key: keyValues, // Use the extracted key values dynamically
+//       UpdateExpression: `SET ${updateExpressions.join(', ')}`,
+//       ExpressionAttributeNames: expressionAttributeNames,
+//       ExpressionAttributeValues: expressionAttributeValues,
+//       ReturnValues: 'ALL_NEW', // Return the updated item
+//     };
+  
+//     try {
+//       const result = await dynamoDB.update(params).promise();
+//       return result.Attributes; // Return the updated attributes
+//     } catch (error) {
+//       throw new Error(`Failed to update item: ${error.message}`);
+//     }
+//   };
+const updateItem = async (tableName, item, sortkey=null) => {
+    // Validate inputs
+    tableName = `${SERVICE}-${tableName}`;
+    if (!tableName || typeof tableName !== 'string') {
+        throw new Error('Invalid table name');
+    }
+
+    if (!item || typeof item !== 'object') {
+        throw new Error('Invalid item data');
+    }
+
+    const keyValues = {};
+    const updateExpressions = [];
+    const expressionAttributeNames = {};
+    const expressionAttributeValues = {};
+
+    // Assume primary keys are already part of the item
+    for (const [key, value] of Object.entries(item)) {
+        if (value === undefined || value === null) {
+            throw new Error(`Invalid value for key: ${key}`);
+        }
+
+        if (typeof value === 'string' || typeof value === 'number') {
+            // Identify primary key
+            if (key.toLowerCase() === 'id' || (sortkey && key == 'type' && value.toLowerCase() == sortkey)) {
+                keyValues[key] = value;
+            } else {
+                // Add non-key attributes to UpdateExpression
+                const attributePlaceholder = `#${key}`;
+                const valuePlaceholder = `:${key}`;
+                updateExpressions.push(`${attributePlaceholder} = ${valuePlaceholder}`);
+                expressionAttributeNames[attributePlaceholder] = key;
+                expressionAttributeValues[valuePlaceholder] = value;
+            }
+        } else if (Array.isArray(value)) {
+            // Handle arrays (like the 'menu' field)
+            const attributePlaceholder = `#${key}`;
+            const valuePlaceholder = `:${key}`;
+            updateExpressions.push(`${attributePlaceholder} = ${valuePlaceholder}`);
+            expressionAttributeNames[attributePlaceholder] = key;
+            expressionAttributeValues[valuePlaceholder] = value;
+        } else {
+            throw new Error(`Unsupported type for key: ${key}`);
+        }
+    }
+
+    const params = {
+        TableName: tableName,
+        Key: keyValues, // Provide the primary key values for identifying the record
+        UpdateExpression: `SET ${updateExpressions.join(', ')}`,
+        ExpressionAttributeNames: expressionAttributeNames,
+        ExpressionAttributeValues: expressionAttributeValues,
+        ReturnValues: 'ALL_NEW', // Return the updated item
+    };
+    
+    console.log(params, 'this is params-->')
+    try {
+        const result = await dynamoDB.update(params).promise();
+        return result.Attributes; // Return the updated attributes
+    } catch (error) {
+        throw new Error(`Failed to update item: ${error.message}`);
+    }
+};
+
 
 const bulkUpdateItems = async (tableName, items) => {
   // Validate inputs

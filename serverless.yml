@@ -1,6 +1,6 @@
 service: fda
 
-frameworkVersion: "4"
+frameworkVersion: "3"
 
 provider:
   name: aws
@@ -20,11 +20,18 @@ functions:
           method: post
           cors: true
 # Users
-  getUserById:
+  get_user_by_id:
     handler: src/handlers/users.getUserById
     events:
       - http:
-          path: getUserById
+          path: get_user_by_id
+          method: post
+          cors: true
+  get_users:
+    handler: src/handlers/users.getAllUsers
+    events:
+      - http:
+          path: get_users
           method: post
           cors: true
   createUser:
@@ -41,11 +48,11 @@ functions:
           path: getUserByIds
           method: post
           cors: true
-  updateUser:
+  update_user:
     handler: src/handlers/users.updateUser
     events:
       - http:
-          path: updateUser
+          path: update_user
           method: post
           cors: true
   queryUsersByFilters:
@@ -70,6 +77,13 @@ functions:
             path: get_all_restaurants
             method: post
             cors: true
+  get_restaurants_by_user_id:
+      handler: src/handlers/restaurants.getRestaurantsByUserId
+      events:
+        - http:
+            path: get_restaurants_by_user_id
+            method: post
+            cors: true
   create_restaurants:
       handler: src/handlers/restaurants.createRestaurant
       events:
@@ -77,11 +91,11 @@ functions:
             path: create_restaurants
             method: post
             cors: true
-  getRestaurantsByIds:
+  get_restaurants_by_ids:
     handler: src/handlers/restaurants.getRestaurantsByIds
     events:
       - http:
-          path: getRestaurantsByIds
+          path: get_restaurants_by_ids
           method: post
           cors: true
   getRestaurantsByName:
@@ -91,50 +105,149 @@ functions:
           path: getRestaurantsByName
           method: post
           cors: true
+  update_restaurant:
+    handler: src/handlers/restaurants.updateRestaurant
+    events:
+      - http:
+          path: update_restaurant
+          method: post
+          cors: true
 # Menu Items
-  getMenuItemById:
-      handler: src/handlers/menu-items-controller.getMenuItemById
+  get_menuitem_by_id:
+      handler: src/handlers/menu-items.getMenuItemById
       events:
         - http:
-            path: getMenuItemById
+            path: get_menuitem_by_id
+            method: post
+            cors: true
+  get_menuitems_by_cat_id:
+      handler: src/handlers/menu-items.getMenuItemsByCatId
+      events:
+        - http:
+            path: get_menuitems_by_cat_id
+            method: post
+            cors: true
+  get_menuitems_by_restaurant_id:
+      handler: src/handlers/menu-items.getMenuItemsByRestaurantId
+      events:
+        - http:
+            path: get_menuitems_by_restaurant_id
             method: post
             cors: true
   getMenuItemsByIds:
-    handler: src/handlers/menu-items-controller.getMenuItemsByIds
+    handler: src/handlers/menu-items.getMenuItemsByIds
     events:
       - http:
           path: getMenuItemsByIds
           method: post
           cors: true
   getMenuItemsByName:
-    handler: src/handlers/menu-items-controller.getMenuItemsByName
+    handler: src/handlers/menu-items.getMenuItemsByName
     events:
       - http:
           path: getMenuItemsByName
           method: post
           cors: true
+  create_menu_items:
+    handler: src/handlers/menu-items.createMenuItems
+    events:
+      - http:
+          path: create_menu_items
+          method: post
+          cors: true
+  update_menu_item:
+    handler: src/handlers/menu-items.updateMenuItem
+    events:
+      - http:
+          path: update_menu_items
+          method: post
+          cors: true
+  get_menu_items:
+    handler: src/handlers/menu-items.getMenuItems
+    events:
+      - http:
+          path: get_menu_items
+          method: post
+          cors: true
 # Orders
-  getOrderById:
-      handler: src/handlers/orders-controller.getOrderById
+  get_order_by_id:
+      handler: src/handlers/orders.getOrderById
       events:
         - http:
-            path: getOrderById
+            path: get_order_by_id
             method: post
             cors: true
-  getOrdersByIds:
-    handler: src/handlers/orders-controller.getOrdersByIds
+  get_order_by_restaurant_id:
+      handler: src/handlers/orders.getOrdersByRestaurantId
+      events:
+        - http:
+            path: get_order_by_restaurant_id
+            method: post
+            cors: true
+  get_orders_by_ids:
+    handler: src/handlers/orders.getOrdersByIds
     events:
       - http:
-          path: getOrdersByIds
+          path: get_orders_by_ids
           method: post
           cors: true
-  getOrdersByUserId:
-    handler: src/handlers/orders-controller.getOrdersByUserId
+  get_orders_by_restaurant_ids:
+    handler: src/handlers/orders.getOrdersByRestaurantIds
     events:
       - http:
-          path: getOrdersByUserId
+          path: get_orders_by_restaurant_ids
           method: post
           cors: true
+  get_orders_by_user_id:
+    handler: src/handlers/orders.getOrdersByUserId
+    events:
+      - http:
+          path: get_orders_by_user_id
+          method: post
+          cors: true
+
+  get_orders:
+    handler: src/handlers/orders.getOrders
+    events:
+      - http:
+          path: get_orders
+          method: post
+          cors: true
+  update_order:
+    handler: src/handlers/orders.updateOrder
+    events:
+      - http:
+          path: update_order
+          method: post
+          cors: true
+  create_orders:
+    handler: src/handlers/orders.createOrders
+    events:
+      - http:
+          path: create_orders
+          method: post
+          cors: true
+  get_categories:
+      handler: src/handlers/category.getCategories
+      events:
+        - http:
+            path: get_categories
+            method: post
+            cors: true
+  create_category:
+      handler: src/handlers/category.createCategory
+      events:
+        - http:
+            path: create_category
+            method: post
+            cors: true
+  update_category:
+      handler: src/handlers/category.updateCategory
+      events:
+        - http:
+            path: update_category
+            method: post
+            cors: true
 
 plugins:
   - serverless-offline

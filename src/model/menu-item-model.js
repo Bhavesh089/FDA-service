@@ -3,15 +3,17 @@
 const Joi = require('joi')
 
 const menuItemSchema = Joi.object({
-  menuItemId: Joi.string(),
-  restaurantId: Joi.string().required(),
+  restaurant_id: Joi.string().required(),
+  restaurant_name: Joi.string().required(),
   name: Joi.string().required(),
   description: Joi.string().required(),
   price: Joi.number().required(),
   category: Joi.string().required(),
-  isAvailable: Joi.boolean().required(),
-  imageUrl: Joi.string().required(),
+  category_id: Joi.string().required(),
+  is_available: Joi.boolean().required(),
+  image_url: Joi.string().required(),
   rating: Joi.number().optional(),
+  quatity: Joi.number().required()
 })
 
 const validateMenuItems = (data) => {
