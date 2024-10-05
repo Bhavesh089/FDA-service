@@ -711,7 +711,7 @@ const updateItem = async (tableName, item, sortkey=null) => {
             throw new Error(`Invalid value for key: ${key}`);
         }
 
-        if (typeof value === 'string' || typeof value === 'number') {
+        if (typeof value === 'string' || typeof value === 'number'  || typeof value === 'boolean') {
             // Identify primary key
             if (key.toLowerCase() === 'id' || (sortkey && key == 'type' && value.toLowerCase() == sortkey)) {
                 keyValues[key] = value;

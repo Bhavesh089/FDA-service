@@ -8,12 +8,12 @@ const menuItemSchema = Joi.object({
   name: Joi.string().required(),
   description: Joi.string().required(),
   price: Joi.number().required(),
-  category: Joi.string().required(),
+  category: Joi.string(),
   category_id: Joi.string().required(),
-  is_available: Joi.boolean().required(),
-  image_url: Joi.string().required(),
+  is_available: Joi.boolean().required().valid(true, false),
+  image_url: Joi.string().optional(),
   rating: Joi.number().optional(),
-  quatity: Joi.number().required()
+  quantity: Joi.number().required()
 })
 
 const validateMenuItems = (data) => {
