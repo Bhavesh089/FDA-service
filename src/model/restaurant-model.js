@@ -10,6 +10,7 @@ const restaurantsSchema = Joi.object({
   rating: Joi.number().optional(),
   menu: Joi.array().items(Joi.string()),
   cuisine_type: Joi.string().optional(),
+  image_url:Joi.string().optional(),
   operating_hours: Joi.string().required(),
   contact_details: Joi.string().required(),
   commission_rate: Joi.number().required(),
