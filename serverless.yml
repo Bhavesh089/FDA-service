@@ -1,12 +1,14 @@
 service: fda
 
-frameworkVersion: "3"
+frameworkVersion: "4"
 
 provider:
   name: aws
   runtime: nodejs20.x
   region: ap-south-1
   iamRoleStatements: ${file(./serverless.iam.yml):iamRoleStatements}
+  versionFunctions: false
+  memorySize: 256
   # environment:
   #   USERS_TABLE: ${self:custom.usersTableName}
 
