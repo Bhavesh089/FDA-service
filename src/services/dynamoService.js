@@ -302,11 +302,12 @@ const createItems = async (tableName, items, validate) => {
   }
 
   items = addUUIDToItems(items)
-  console.log(items, 'this is items-->')
+  
   if (Array.isArray(items)) {
+    // const createdItemIds = items.map(item => item.id || item.uuid);
     const chunks = _.chunk(items, 25) // DynamoDB batch write supports up to 25 items at a time
     const results = []
-
+    const unprocessedOrderIds = [];
     for (const chunk of chunks) {
       const params = {
         RequestItems: {
@@ -320,8 +321,13 @@ const createItems = async (tableName, items, validate) => {
 
       try {
         const result = await dynamoDB.batchWrite(params).promise()
-        results.push(result)
+        const unprocessedItems = result.UnprocessedItems[tableName];
+
         if (result.UnprocessedItems && result.UnprocessedItems[tableName]) {
+          unprocessedItems.forEach((unprocessed) => {
+            const unprocessedId = unprocessed.PutRequest.Item.id || unprocessed.PutRequest.Item.uuid;
+            unprocessedOrderIds.push(unprocessedId); // Collect unprocessed order IDs
+          });
           console.warn(
             `Unprocessed items: ${JSON.stringify(result.UnprocessedItems[tableName])}`
           )
@@ -331,16 +337,20 @@ const createItems = async (tableName, items, validate) => {
       }
     }
 
-    return results // Return the results of all batch write operations
+    const processedItems = items.filter(id => !unprocessedOrderIds.includes(id));
+
+    console.log(processedItems, 'this is processedItems')
+    return {results, processedItems} // Return the results of all batch write operations
   } else {
     // Perform single create
     const params = {
       TableName: tableName,
       Item: items,
     }
-
+    const result = await dynamoDB.put(params).promise()
+    console.log(result, 'this is result from the center')
     try {
-      return await dynamoDB.put(params).promise()
+      return result
     } catch (error) {
       throw new Error(`Error putting item: ${error.message}`)
     }

@@ -45,10 +45,10 @@ const createOrders = async (orderPayload) => {
     console.log(
       `createOrders::Params::${{ userPayload: JSON.stringify(orderPayload, null, 2) }}`
     )
-    const result = await createItems(TABLE_ORDERS, orderPayload, validateOrders)
-    console.log(result)
+    const {processedItems, result}= await createItems(TABLE_ORDERS, orderPayload, validateOrders)
+    console.log(processedItems)
 
-    return handleResponse(true, 201, 'Create Order items Success', {orders: result})
+    return handleResponse(true, 201, 'Create Order items Success', {orders: processedItems})
   } catch (error) {
     return handleErrorResponse(error, 'createOrders')
   }
