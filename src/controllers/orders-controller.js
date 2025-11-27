@@ -45,6 +45,14 @@ const createOrders = async (orderPayload) => {
     console.log(
       `createOrders::Params::${{ userPayload: JSON.stringify(orderPayload, null, 2) }}`
     )
+    if(orderPayload.order_status && orderPayload.order_status == "COMPLETED"){
+      orderPayload.order_completed_at = new Date()
+    }
+
+    if(orderPayload.order_status && orderPayload.order_status == "PENDING"){
+      orderPayload.order_placed_at = new Date()
+    }
+
     const {processedItems, result}= await createItems(TABLE_ORDERS, orderPayload, validateOrders)
     console.log(processedItems)
 
