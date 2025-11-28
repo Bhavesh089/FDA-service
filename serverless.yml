@@ -1,20 +1,255 @@
 service: fda
 
-frameworkVersion: '3'
+frameworkVersion: "3"
 
 provider:
   name: aws
   runtime: nodejs20.x
   region: ap-south-1
+  iamRoleStatements: ${file(./serverless.iam.yml):iamRoleStatements}
+  versionFunctions: false
+  memorySize: 128
+  # environment:
+  #   USERS_TABLE: ${self:custom.usersTableName}
 
 functions:
-  get_user:
-    handler: src/handlers/users.getUser
+# Auth
+  verify_login_otp:
+    handler: src/handlers/auth.verifyLoginOtp
     events:
       - http:
-          path: get_user
+          path: verify_login_otp
           method: post
           cors: true
+# Users
+  get_user_by_id:
+    handler: src/handlers/users.getUserById
+    events:
+      - http:
+          path: get_user_by_id
+          method: post
+          cors: true
+  get_users:
+    handler: src/handlers/users.getAllUsers
+    events:
+      - http:
+          path: get_users
+          method: post
+          cors: true
+  createUser:
+    handler: src/handlers/users.createUser
+    events:
+      - http:
+          path: createUser
+          method: post
+          cors: true
+  getUserByIds:
+    handler: src/handlers/users.getUserByIds
+    events:
+      - http:
+          path: getUserByIds
+          method: post
+          cors: true
+  update_user:
+    handler: src/handlers/users.updateUser
+    events:
+      - http:
+          path: update_user
+          method: post
+          cors: true
+  queryUsersByFilters:
+    handler: src/handlers/users.queryUsersByFilters
+    events:
+      - http:
+          path: queryUsersByFilters
+          method: post
+          cors: true
+# Restaurants
+  get_restaurant_by_id:
+      handler: src/handlers/restaurants.getRestaurantById
+      events:
+        - http:
+            path: get_restaurant_by_id
+            method: post
+            cors: true
+  get_all_restaurants:
+      handler: src/handlers/restaurants.getAllRestaurants
+      events:
+        - http:
+            path: get_all_restaurants
+            method: post
+            cors: true
+  get_restaurants_by_user_id:
+      handler: src/handlers/restaurants.getRestaurantsByUserId
+      events:
+        - http:
+            path: get_restaurants_by_user_id
+            method: post
+            cors: true
+  create_restaurants:
+      handler: src/handlers/restaurants.createRestaurant
+      events:
+        - http:
+            path: create_restaurants
+            method: post
+            cors: true
+  get_restaurants_by_ids:
+    handler: src/handlers/restaurants.getRestaurantsByIds
+    events:
+      - http:
+          path: get_restaurants_by_ids
+          method: post
+          cors: true
+  getRestaurantsByName:
+    handler: src/handlers/restaurants.getRestaurantsByName
+    events:
+      - http:
+          path: getRestaurantsByName
+          method: post
+          cors: true
+  update_restaurant:
+    handler: src/handlers/restaurants.updateRestaurant
+    events:
+      - http:
+          path: update_restaurant
+          method: post
+          cors: true
+# Menu Items
+  get_menuitem_by_id:
+      handler: src/handlers/menu-items.getMenuItemById
+      events:
+        - http:
+            path: get_menuitem_by_id
+            method: post
+            cors: true
+  get_menuitems_by_cat_id:
+      handler: src/handlers/menu-items.getMenuItemsByCatId
+      events:
+        - http:
+            path: get_menuitems_by_cat_id
+            method: post
+            cors: true
+  get_menuitems_by_restaurant_id:
+      handler: src/handlers/menu-items.getMenuItemsByRestaurantId
+      events:
+        - http:
+            path: get_menuitems_by_restaurant_id
+            method: post
+            cors: true
+  getMenuItemsByIds:
+    handler: src/handlers/menu-items.getMenuItemsByIds
+    events:
+      - http:
+          path: getMenuItemsByIds
+          method: post
+          cors: true
+  getMenuItemsByName:
+    handler: src/handlers/menu-items.getMenuItemsByName
+    events:
+      - http:
+          path: getMenuItemsByName
+          method: post
+          cors: true
+  create_menu_items:
+    handler: src/handlers/menu-items.createMenuItems
+    events:
+      - http:
+          path: create_menu_items
+          method: post
+          cors: true
+  update_menu_item:
+    handler: src/handlers/menu-items.updateMenuItem
+    events:
+      - http:
+          path: update_menu_items
+          method: post
+          cors: true
+  get_menu_items:
+    handler: src/handlers/menu-items.getMenuItems
+    events:
+      - http:
+          path: get_menu_items
+          method: post
+          cors: true
+# Orders
+  get_order_by_id:
+      handler: src/handlers/orders.getOrderById
+      events:
+        - http:
+            path: get_order_by_id
+            method: post
+            cors: true
+  get_order_by_restaurant_id:
+      handler: src/handlers/orders.getOrdersByRestaurantId
+      events:
+        - http:
+            path: get_order_by_restaurant_id
+            method: post
+            cors: true
+  get_orders_by_ids:
+    handler: src/handlers/orders.getOrdersByIds
+    events:
+      - http:
+          path: get_orders_by_ids
+          method: post
+          cors: true
+  get_orders_by_restaurant_ids:
+    handler: src/handlers/orders.getOrdersByRestaurantIds
+    events:
+      - http:
+          path: get_orders_by_restaurant_ids
+          method: post
+          cors: true
+  get_orders_by_user_id:
+    handler: src/handlers/orders.getOrdersByUserId
+    events:
+      - http:
+          path: get_orders_by_user_id
+          method: post
+          cors: true
+
+  get_orders:
+    handler: src/handlers/orders.getOrders
+    events:
+      - http:
+          path: get_orders
+          method: post
+          cors: true
+  update_order:
+    handler: src/handlers/orders.updateOrder
+    events:
+      - http:
+          path: update_order
+          method: post
+          cors: true
+  create_orders:
+    handler: src/handlers/orders.createOrders
+    events:
+      - http:
+          path: create_orders
+          method: post
+          cors: true
+  get_categories:
+      handler: src/handlers/category.getCategories
+      events:
+        - http:
+            path: get_categories
+            method: post
+            cors: true
+  create_category:
+      handler: src/handlers/category.createCategory
+      events:
+        - http:
+            path: create_category
+            method: post
+            cors: true
+  update_category:
+      handler: src/handlers/category.updateCategory
+      events:
+        - http:
+            path: update_category
+            method: post
+            cors: true
 
 plugins:
   - serverless-offline
@@ -23,3 +258,12 @@ custom:
   serverless-offline:
     httpPort: 3002
     lambdaPort: 3003
+    
+  userTableName:  ${self:service}-${file(./src/constants/constants.js):USER_TABLE_NAME} 
+  restaurantTableName:  ${self:service}-${file(./src/constants/constants.js):RESTAURANT_TABLE_NAME}
+  menuItemTableName:  ${self:service}-${file(./src/constants/constants.js):MENU_ITEM_TABLE_NAME} 
+  categoryTableName:  ${self:service}-${file(./src/constants/constants.js):CATEGORY_TABLE_NAME} 
+  orderTableName:  ${self:service}-${file(./src/constants/constants.js):ORDER_TABLE_NAME} 
+
+resources:
+  - ${file(resources.yml)}

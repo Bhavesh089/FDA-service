@@ -22,7 +22,7 @@ function mergeParams(event) {
   if (event.pathParameters) {
     body = {
       ...body,
-      ...event.pathParameters
+      ...event.pathParameters,
     }
   }
 
@@ -30,7 +30,7 @@ function mergeParams(event) {
   if (event.queryStringParameters) {
     body = {
       ...body,
-      ...event.queryStringParameters
+      ...event.queryStringParameters,
     }
   }
 
@@ -42,5 +42,5 @@ function isEmpty(obj) {
 }
 
 module.exports = {
-  mergeParams
+  mergeParams,
 }
